@@ -1,0 +1,12 @@
+
+{% extends 'navbar.html' %}
+
+{% block content %}
+	{% if object.inputfile %}
+	<div class="section container">
+		<h4> File you uploaded: {{ object.inputfile }} </h4>
+	</div>
+	{% endif %}
+	<a href="{% url 'post_edit' post.pk %}"> Edit info </a>
+	<a href="{% url 'post_delete' post.pk %}"> Delete info </a>
+{% endblock %}
