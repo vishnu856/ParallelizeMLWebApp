@@ -5,7 +5,7 @@
 <p class="blue-text"> Hello World!!! This is home. </p>
 <ul>
 	{% for post in object_list %}
-		<a href="{% url 'post_detail' post.pk %}"> {{ post.inputfile }} </a> <br>
+		<a href="{% url 'post_detail' post.pk %}"> {{ post.title }} </a> <br>
 	{% endfor %}
 </ul>
 </body>
