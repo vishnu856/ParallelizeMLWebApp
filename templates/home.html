@@ -2,12 +2,17 @@
 {% extends 'navbar.html' %}
 {% block content %}
 <body>
-<p class="blue-text"> Hello World!!! This is home. </p>
+<h1 class="center"> Hello World!!! This is home. </h1>
+<div class="section container">
+<div class="collection with-header">
 <ul>
+	<li class="collection-header center"><h5>Your experiments</h5></li>
 	{% for post in object_list %}
-		<a href="{% url 'post_detail' post.pk %}"> {{ post.title }} </a> <br>
+		<li class="collection-item center"><a href="{% url 'post_edit' post.pk %}"> {{ post.title }} </a></li>
 	{% endfor %}
 </ul>
+</div>
+</div>
 </body>
 {% endblock %}
 </html>

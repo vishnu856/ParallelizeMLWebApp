@@ -2,9 +2,11 @@
 {% extends 'navbar.html' %}
 
 {% block content %}
-	<h2> Delete content </h2>
+	<h4 class="center"> Delete content </h4>
+	<div class="section container">
 	<form action="" method="post"> {% csrf_token %}
-		<p> Are you sure you want to delete this post? </p>
-		<input type="submit" value="Confirm"/>
+		<p class="center"> Are you sure you want to delete this post? </p>
+		<button type="submit" class="btn btn-default waves-effect waves-light right green">Confirm</button>
 	</form>
+	</div>
 {% endblock %}

@@ -2,11 +2,115 @@
 {% extends 'navbar.html' %}
 
 {% block content %}
-	<h2> Edit Information </h2>
+	<h4 class="center"> Edit Information </h4>
+	{% load material_form %}
 	<form action="" method="post" enctype="multipart/form-data"> {% csrf_token %}		
-		{{ form.as_p }}
-		<br>
-		<input type="submit" value="Update"/>
+		{{ form.non_field_errors }}
+		{{ form.source_errors }}
+		{{ form.source }}
+		<div class="container section">		
+			<div class="row">
+				<div class="input-field col s12">		
+					{{ form.title.errors }}
+					{{ form.title }}				
+					{{ form.title.label_tag }}
+				</div>
+			</div>
+			<div class="file-field input-field">
+				<div class="btn">
+					<span> Choose File </span>
+					{{ form.inputfile }}
+				</div>
+				 <div class="file-path-wrapper">
+					<input class="file-path validate" type="text" placeholder="Upload new file.">
+				 </div>
+			</div>
+			<div class="row">
+				<div class="input-field col s12">		
+					{{ form.comments.errors }}
+					{{ form.comments }}				
+					{{ form.comments.label_tag }}
+				</div>
+			</div>
+			<div class="input-field col s12">						
+				{{ form.algorithm_choice.errors }}
+				{{ form.algorithm_choice }}	
+				{{ form.algorithm_choice.label_tag }}			
+			</div>			
+			<div id="hiddev_super" style="display: none;">
+				<div class="row">
+				<div class="input-field col s12">
+					{{ form.validation_split.errors }}
+					{{ form.validation_split }}				
+					{{ form.validation_split.label_tag }}				
+				</div>		
+				</div>	
+				<div class="row">
+				<div class="input-field col s12">
+					{{ form.method_super.errors }}
+					{{ form.method_super }}				
+					<label for="id_method_super">Supervised learning problem type</label>				
+				</div>		
+				</div>	
+				<div id="hiddev_class" style="display: none;">
+					<div class="row">
+					<div class="input-field col s12">
+						{{ form.no_labels.errors }}
+						{{ form.no_labels }}				
+						<label for="id_no_labels">Number of classes</label>		
+					</div>		
+					</div>	
+				</div>
+				<div class="row">
+				<div class="input-field col s12">
+					{{ form.target.errors }}
+					{{ form.target }}				
+					<label for="id_target">Prediction variable name:</label>		
+				</div>		
+				</div>	
+				<script type="text/javascript">
+					showSuperDiv(document.getElementById('id_method_super'));			
+				</script>
+			</div>
+			<div id="hiddev_unsuper" style="display: none;">
+				<div class="row">
+				<div class="input-field col s12">
+					{{ form.method_unsuper.errors }}
+					{{ form.method_unsuper }}				
+					<label for="id_method_super">Unsupervised learning problem type</label>				
+				</div>		
+				</div>
+				<div id="hiddev_clust" style="display : none;">
+					<div class="row">
+					<div class="input-field col s12">
+						{{ form.no_clusters.errors }}
+						{{ form.no_clusters }}				
+						<label for="id_no_clusters">Number of clusters</label>		
+					</div>		
+					</div>										
+				</div>
+				<div id="hiddev_features" style="display : none;">
+					<div class="row">
+					<div class="input-field col s12">
+						{{ form.no_features.errors }}
+						{{ form.no_features }}				
+						<label for="id_no_features">Number of features</label>		
+					</div>		
+					</div>										
+				</div>
+				<script type="text/javascript">
+					showUnsuperDiv(document.getElementById('id_method_unsuper'));			
+				</script>
+			</div>
+			<script type="text/javascript">
+				showDiv(document.getElementById('id_algorithm_choice'));			
+			</script>
+			
+		<div class="row">
+			<button class="btn btn-default right green waves-effect waves-light" type="submit">Update</button>		
+			<a href="{% url 'post_delete' post.pk %}" class="btn btn-default left green waves-effect waves-light"> Delete experiment </a>
+		</div>
+
 	</form>
 
 {% endblock %}
