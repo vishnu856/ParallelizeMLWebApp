@@ -6,8 +6,8 @@
 {% block content %}
 	<h4 class="center"> New Experiment </h4>
 	<form action="" method="post" enctype="multipart/form-data"> {% csrf_token %}
-		{{ form.non_field_errors }}
-		{{ form.source_errors }}
+		<div class="red-text center">{{ form.non_field_errors }}</div>
+		<div class="red-text center">{{ form.source_errors }}</div>
 		{{ form.source }}
 		<div class="container section">		
 			<div class="row">
@@ -69,6 +69,9 @@
 					<label for="id_target">Prediction variable name:</label>		
 				</div>		
 				</div>	
+				<script type="text/javascript">
+					showSuperDiv(document.getElementById('id_method_super'));			
+				</script>
 			</div>
 			<div id="hiddev_unsuper" style="display: none;">
 				<div class="row">
@@ -96,7 +99,13 @@
 					</div>		
 					</div>										
 				</div>
+				<script type="text/javascript">
+					showUnsuperDiv(document.getElementById('id_method_unsuper'));			
+				</script>
 			</div>
+			<script type="text/javascript">
+				showDiv(document.getElementById('id_algorithm_choice'));			
+			</script>
 			<button type="submit" class="btn btn-default right green waves-effect waves-light">Submit</button>
 		</div>
 	</form>
