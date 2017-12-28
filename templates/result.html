@@ -1,0 +1,12 @@
+
+{% extends 'navbar.html' %}
+
+{% block content %}
+	<h4 class="center"> Results </h4>
+	<div>
+		<ul>
+			<li> Predictions: {{ y_pred }} </li>
+			<li> Test values: {{ y_test }} </li>
+		</ul>
+	</div>
+{% endblock %}
