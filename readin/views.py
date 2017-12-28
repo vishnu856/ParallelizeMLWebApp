@@ -261,6 +261,7 @@ class EditExperiment(UpdateView):
 				context['y_pred']=lab_enc.inverse_transform(Y_pred)
 				context['y_test']=lab_enc.inverse_transform(Y_test)
 		context['form']=form
+		context['zip']=zip(lab_enc.inverse_transform(Y_pred), lab_enc.inverse_transform(Y_test))
 		# here you can add things like:
 		self.object=form.save(commit=False)
 		self.object.pk=kwargs['pk']

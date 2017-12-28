@@ -44,4 +44,3 @@ function showUnsuperDiv(elem)
 	}
 	
 }
-
