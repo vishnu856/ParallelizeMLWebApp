@@ -19,6 +19,7 @@ from sklearn.feature_extraction import DictVectorizer as DV
 import csv
 from sklearn import preprocessing
 import codecs
+import json
 
 # Create your views here.
 
@@ -135,9 +136,11 @@ class NewExperiment(CreateView):
 				Y_pred=clf_gini.predict(X_test)
 				context['y_pred']=lab_enc.inverse_transform(Y_pred)
 				context['y_test']=lab_enc.inverse_transform(Y_test)
+				context['zip_json']=json.dumps(list(zip(lab_enc.inverse_transform(Y_pred), lab_enc.inverse_transform(Y_test))))
+				context['zip']=list(zip(lab_enc.inverse_transform(Y_pred), lab_enc.inverse_transform(Y_test)))
 		context['form']=form
 		# here you can add things like:
-		form.save()
+		self.object=form.save()
 		return render_to_response("result.html",context)
 
 
@@ -260,8 +263,9 @@ class EditExperiment(UpdateView):
 				Y_pred=clf_gini.predict(X_test)
 				context['y_pred']=lab_enc.inverse_transform(Y_pred)
 				context['y_test']=lab_enc.inverse_transform(Y_test)
+				context['zip_json']=json.dumps(list(zip(lab_enc.inverse_transform(Y_pred), lab_enc.inverse_transform(Y_test))))
+				context['zip']=list(zip(lab_enc.inverse_transform(Y_pred), lab_enc.inverse_transform(Y_test)))
 		context['form']=form
-		context['zip']=zip(lab_enc.inverse_transform(Y_pred), lab_enc.inverse_transform(Y_test))
 		# here you can add things like:
 		self.object=form.save(commit=False)
 		self.object.pk=kwargs['pk']
