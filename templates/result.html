@@ -3,18 +3,22 @@
 
 {% block content %}
 	<h4 class="center"> Results </h4>
-	<div>
+	<div style="overflow-x:scroll; height: 80%;">
 		<table class="highlight centered">
 			<thead>
-				<tr>				
+				<tr>		
+					{% for col in x_cols %}
+						<th> {{ col }} </th>					
+					{% endfor %}		
 					<th> Predictions: </th>
 					<th> Test values: </th>  
 				</tr>
 			</thead>
-			{% for y1 in zip %}
-			<tbody>
-				<td> {{ y1.0 }} </td>
-				<td> {{ y1.1 }} </td>
+			{% for y1 in full_set %}
+			<tbody>		
+				{% for ele in y1 %}		
+					<td> {{ ele }} </td>
+				{% endfor %}
 			</tbody>
 			{% endfor %}
 		</table>
