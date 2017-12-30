@@ -132,6 +132,7 @@ def process(context, form, **kwargs):
 #				test_zip=pd.DataFrame(test_zip)
 			print(np.array(test_zip))
 			context['full_set']=np.array(test_zip)
+			context['zip_json']=test_zip
 
 	context['form']=form
 	# here you can add things like:
