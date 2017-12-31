@@ -23,7 +23,6 @@ class Post(models.Model):
 	)
 	title=models.CharField(max_length=200, default="Untitled")
 	inputfile=models.FileField(upload_to=user_directory_path, null=True, blank=True)
-#	ID=models.CharField(max_length=500, blank=True, null=True)
 	comments=models.CharField(max_length=500, blank=True, null=True)
 	algorithm_choice=models.CharField(max_length=2, choices=ALGO_CHOICES, blank=True)
 	

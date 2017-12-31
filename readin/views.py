@@ -9,6 +9,7 @@ from django.urls import reverse_lazy
 from django import forms
 import os
 import pandas as pd
+from collections import defaultdict
 import numpy as np
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.metrics import accuracy_score
@@ -21,6 +22,7 @@ import csv
 from sklearn import preprocessing
 import codecs
 import json
+import sklearn.metrics as met
 
 # Create your views here.
 
@@ -93,6 +95,24 @@ def encode_target(df, target_column):
 
     return (df_mod, targets)
 
+def report2dict(cr):
+    # Parse rows
+    tmp = list()
+    for row in cr.split("\n"):
+        parsed_row = [x for x in row.split("  ") if len(x) > 0]
+        if len(parsed_row) > 0:
+            tmp.append(parsed_row)
+    
+    # Store in dictionary
+    measures = tmp[0]
+
+    D_class_data = defaultdict(dict)
+    for row in tmp[1:]:
+        class_label = row[0]
+        for j, m in enumerate(measures):
+            D_class_data[class_label][m.strip()] = float(row[j + 1].strip())
+    return D_class_data
+
 def process(context, form, **kwargs):
 	target=form.cleaned_data['target']
 	inputfile=form.cleaned_data['inputfile']
@@ -114,7 +134,7 @@ def process(context, form, **kwargs):
 		method_super=form.cleaned_data['method_super']
 		if method_super == 'C':
 			clf_gini=DecisionTreeClassifier(criterion="gini", random_state=100, max_depth=32, min_samples_leaf=5)
-			#clf_gini.fit(X_train, Y_train)
+			clf_gini.fit(X, Y)
 			Y_pred=cross_val_predict(clf_gini, X, Y, cv=int(100-validation_split)) #clf_gini.predict(X_test)	
 			X_test=X
 			Y_test=Y
@@ -129,6 +149,9 @@ def process(context, form, **kwargs):
 			test_zip=np.concatenate([val_set, Y_pred],axis=1)
 			context['full_set']=np.array(test_zip)
 #			print(zip_val)
+			class_report=pd.DataFrame(report2dict(met.classification_report(Y_test, Y_pred)))
+			print(class_report)
+			context['class_report']=class_report.to_html()
 			context['zip_json']=json.dumps(zip_val)
 			context['form']=form
 			# here you can add things like:
