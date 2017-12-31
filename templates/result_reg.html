@@ -1,0 +1,59 @@
+
+{% extends 'navbar.html' %}
+
+{% block content %}
+	<h4 class="center"> Results </h4>
+	<div class="container">
+	<div class="responsive-table" style="overflow-x:scroll; height: 80%;">
+		<table class="highlight centered">
+			<thead>
+				<tr>		
+					{% for col in x_cols %}
+						<th> {{ col }} </th>					
+					{% endfor %}		
+					<th> Test values: </th>
+					<th> Prediction: </th>  
+				</tr>
+			</thead>
+			{% for y1 in full_set %}
+			<tbody>		
+				{% for ele in y1 %}		
+					<td> {{ ele }} </td>
+				{% endfor %}
+			</tbody>
+			{% endfor %}
+		</table>
+	</div>
+	<div id="scatterchart_material" class="center" style="display:block;">
+	</div>
+	</div>
+	<script type="text/javascript">
+		 google.charts.load('current', {
+		   'packages': ['scatter','line']
+		 });
+		 google.charts.setOnLoadCallback(drawChart);
+		function drawChart () {
+
+        var data = new google.visualization.DataTable();
+        data.addColumn('number', 'Prediction Label');
+        data.addColumn('number', 'Test Label');
+
+        data.addRows({{ zip_json|safe }});
+
+        var options = {
+          width: 800,
+          height: 500,
+          chart: {
+            title: 'Predictions versus Test values',
+            subtitle: 'On a supervised regression algorithm'
+          },
+          hAxis: {title: 'Predicted values'},
+          vAxis: {title: 'Test values'}
+        };
+
+        var chart = new google.charts.Scatter(document.getElementById('scatterchart_material'));
+
+        chart.draw(data, google.charts.Scatter.convertOptions(options));
+      }		
+	</script>
+{% endblock %}

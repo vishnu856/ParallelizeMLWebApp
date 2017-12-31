@@ -10,12 +10,13 @@ from django import forms
 import os
 import pandas as pd
 import numpy as np
-from sklearn.cross_validation import train_test_split
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.metrics import accuracy_score
 from sklearn import tree
 from sklearn import utils
 from sklearn.feature_extraction import DictVectorizer as DV
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import cross_val_predict
 import csv
 from sklearn import preprocessing
 import codecs
@@ -96,47 +97,70 @@ def process(context, form, **kwargs):
 	target=form.cleaned_data['target']
 	inputfile=form.cleaned_data['inputfile']
 	data_file=pd.DataFrame(pd.read_csv(inputfile, sep=','))
-	validation_split=form.cleaned_data['validation_split']
-	df, targets= encode_target(data_file, target)		
-	X=df.loc[:, df.columns!=target]
-	X=X.loc[:, X.columns!="Encode"+str(target)]
-	Y=df[str(target)]
-	from sklearn import preprocessing
-	lab_enc = preprocessing.LabelEncoder()
-	encoded_Y=lab_enc.fit_transform(Y)
+	#df, targets= encode_target(data_file, target)		
+	X=data_file.loc[:, data_file.columns!=target]
+	#X=X.loc[:, X.columns!="Encode"+str(target)]
+	Y=data_file[str(target)]
+#	print(Y)
 	for i in X.columns:
-		if isinstance(X.get_value(0,i),str):
+		if isinstance(X.at[0,i],str):
 			X, col=encode_target(X, i)
 			X=X.loc[:, X.columns!=i]
-	X_train, X_test, Y_train, Y_test=train_test_split(X,encoded_Y,test_size=1-(float(validation_split)/100), random_state=100)
 
 	algorithm_choice=form.cleaned_data['algorithm_choice']
 	if algorithm_choice == 'S':
+		validation_split=form.cleaned_data['validation_split']
+		#X_train, X_test, Y_train, Y_test=train_test_split(X,Y,test_size=1-(float(validation_split)/100), random_state=100)
 		method_super=form.cleaned_data['method_super']
 		if method_super == 'C':
-			clf_gini=DecisionTreeClassifier(criterion="gini", random_state=100, max_depth=3, min_samples_leaf=5)
-			clf_gini.fit(X_train, Y_train)
-			Y_pred=clf_gini.predict(X_test)
+			clf_gini=DecisionTreeClassifier(criterion="gini", random_state=100, max_depth=32, min_samples_leaf=5)
+			#clf_gini.fit(X_train, Y_train)
+			Y_pred=cross_val_predict(clf_gini, X, Y, cv=int(100-validation_split)) #clf_gini.predict(X_test)	
+			X_test=X
+			Y_test=Y
 			context['x_cols']=X_test.columns
 			context['tot_cols']=range(len(X_test.columns)+2)
-			context['y_pred']=lab_enc.inverse_transform(Y_pred)
-			context['y_test']=lab_enc.inverse_transform(Y_test)
-
-			Y_pred=np.matrix(lab_enc.inverse_transform(Y_pred)).T
-			print(Y_pred.shape)
-			Y_test=np.matrix(lab_enc.inverse_transform(Y_test)).T
-			print(Y_test.shape)
+			context['y_pred']=Y_pred 
+			context['y_test']=Y_test 
+			zip_val=list(zip(Y_test, Y_pred))
+			Y_pred=np.matrix(Y_pred).T
+			Y_test=np.matrix(Y_test).T
 			val_set=np.concatenate([X_test, Y_test], axis=1)
-			print(val_set.shape)
 			test_zip=np.concatenate([val_set, Y_pred],axis=1)
-#				test_zip=pd.DataFrame(test_zip)
-			print(np.array(test_zip))
 			context['full_set']=np.array(test_zip)
-			context['zip_json']=test_zip
+#			print(zip_val)
+			context['zip_json']=json.dumps(zip_val)
+			context['form']=form
+			# here you can add things like:
+			return render_to_response("result_class.html",context)
 
-	context['form']=form
-	# here you can add things like:
-	return render_to_response("result.html",context)
+
+		if method_super == 'R':
+			lr=LinearRegression()
+			rgr_gini=DecisionTreeRegressor(criterion="mse", random_state=128, max_depth=32, min_samples_leaf=1)
+#			lr.fit(X_train, Y_train)
+#			print(Y)
+#			Y_pred=lr.predict(X_test)
+			Y_pred=cross_val_predict(rgr_gini, X, Y, cv=int(100-validation_split))
+			X_test=X
+			Y_test=Y
+			context['x_cols']=X_test.columns
+			context['tot_cols']=range(len(X_test.columns)+2)
+			context['y_pred']=Y_pred 
+			context['y_test']=Y_test 
+			zip_val=list(zip(Y_test, Y_pred))
+			Y_pred=np.matrix(Y_pred).T
+			Y_test=np.matrix(Y_test).T
+			val_set=np.concatenate([X_test, Y_test], axis=1)
+			test_zip=np.concatenate([val_set, Y_pred],axis=1)
+			context['full_set']=np.array(test_zip)
+#			print(zip_val)
+			context['zip_json']=json.dumps(zip_val)
+			context['form']=form
+			# here you can add things like:
+			return render_to_response("result_reg.html",context)
+		context['error']="This is an error page. You are not supposed to see this."
+		return render_to_response("home.html", context)
 
 class NewExperiment(CreateView):
 	model = Post
