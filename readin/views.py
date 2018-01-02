@@ -150,8 +150,17 @@ def process(context, form, **kwargs):
 			context['full_set']=np.array(test_zip)
 #			print(zip_val)
 			class_report=pd.DataFrame(report2dict(met.classification_report(Y_test, Y_pred)))
-			print(class_report)
 			context['class_report']=class_report.to_html()
+			context['classes']=list(set(Y))
+			lookup={}
+			i=0
+			for c in context['classes']:
+				lookup[i]=c
+				i=i+1
+			conf_mat=pd.DataFrame(met.confusion_matrix(Y_test, Y_pred, labels=context['classes'])).rename(lookup, axis='index').rename(lookup, axis='columns')
+			print(lookup)
+			print(conf_mat)
+			context['confusion_matrix']=conf_mat.to_html()
 			context['zip_json']=json.dumps(zip_val)
 			context['form']=form
 			# here you can add things like:
