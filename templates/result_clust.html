@@ -1,0 +1,79 @@
+
+{% extends 'navbar.html' %}
+
+{% block content %}
+	<h4 class="center"> Results </h4>
+	<div class="container">
+	<div class="responsive-table" style="overflow-x:scroll; height: 80%;">
+		<table class="highlight centered">
+			<thead>
+				<tr>		
+					{% for col in x_cols %}
+						<th> {{ col }} </th>					
+					{% endfor %}		
+					<th> Cluster Label: </th>  
+				</tr>
+			</thead>
+			{% for y1 in full_set %}
+			<tbody>		
+				{% for ele in y1 %}		
+					<td> {{ ele }} </td>
+				{% endfor %}
+			</tbody>
+			{% endfor %}
+		</table>
+	</div>
+	<div class="responsive-table" style="overflow-x:scroll;">
+		<h5 class="center"> Result metric values for the clustering technique: </h5>		
+		<table class="highlight centered">
+			<thead>
+				<tr> 
+					<th> Silhouette score </th>
+					<th> Calinski-Harabaz score </th>
+				</tr>
+			</thead>
+			<tbody>
+				<td> {{ silhouette }} </td>
+				<td> {{ chscore }} </td>
+			</tbody>
+		</table>
+	</div>
+	<div id="scatterchart_material" class="center" style="display:block;">
+	</div>
+	</div>
+	<script type="text/javascript">
+		 google.charts.load('current', {
+		   'packages': ['corechart']
+		 });
+		 google.charts.setOnLoadCallback(drawChart);
+		function drawChart () {
+
+			var data = new google.visualization.DataTable();
+//			{% for c in classes %}
+//				data.addColumns({{ c|safe }});
+//			{% endfor %}
+			data.addColumn('number');
+			data.addColumn('number');
+			data.addColumn({type:'string',label: 'label', p:{role:'tooltip'}});
+			data.addRows({{ zip_json|safe }})
+
+			var options = {
+			  width: 1000,
+			  height: 500,
+			  chart: {
+			    title: 'Scatter Plot for clustering',
+			    subtitle: 'On an unsupervised clustering algorithm'
+			  },
+			  curveType:'function',
+			  hAxis: {title: 'Principal Component 1'},
+		          vAxis: {title: 'Principal Component 2'},
+			  legend : 'none',
+			  
+			};
+
+			var chart = new google.visualization.ScatterChart(document.getElementById('scatterchart_material'));
+
+			chart.draw(data, options);// google.charts.Scatter.convertOptions(options));
+      		}		
+	</script>				
+{% endblock %}

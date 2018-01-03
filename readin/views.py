@@ -18,6 +18,7 @@ from sklearn import utils
 from sklearn.feature_extraction import DictVectorizer as DV
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import cross_val_predict
+from sklearn.decomposition import PCA
 import csv
 from sklearn import preprocessing
 import codecs
@@ -25,6 +26,7 @@ from sklearn.cluster import KMeans
 import json
 import sklearn.metrics as met
 from scipy import interp
+import matplotlib.pyplot as pl, mpld3
 
 # Create your views here.
 
@@ -118,7 +120,7 @@ def report2dict(cr):
 def process(context, form, **kwargs):
 	inputfile=form.cleaned_data['inputfile']
 	data_file=pd.DataFrame(pd.read_csv(inputfile, sep=','))
-	print(data_file)
+#	print(data_file)
 	X=data_file
 	#df, targets= encode_target(data_file, target)		
 	#X=X.loc[:, X.columns!="Encode"+str(target)]
@@ -130,8 +132,8 @@ def process(context, form, **kwargs):
 
 	algorithm_choice=form.cleaned_data['algorithm_choice']
 	if algorithm_choice == 'S':
-		X=data_file.loc[:, data_file.columns!=target]
 		target=form.cleaned_data['target']
+		X=X.loc[:, X.columns!=target]
 		Y=data_file[str(target)]
 		validation_split=form.cleaned_data['validation_split']
 		#X_train, X_test, Y_train, Y_test=train_test_split(X,Y,test_size=1-(float(validation_split)/100), random_state=100)
@@ -222,12 +224,32 @@ def process(context, form, **kwargs):
 			context['form']=form
 			# here you can add things like:
 			return render_to_response("result_reg.html",context)
-		context['error']="This is an error page. You are not supposed to see this."
 	if algorithm_choice == 'U':
 		method_unsuper=form.cleaned_data['method_unsuper']
 		if method_unsuper=='C':
 			kmeans=KMeans(n_clusters=form.cleaned_data['no_clusters']).fit(X)
-			print(kmeans.labels_)
+			context['x_cols']=data_file.columns
+			context['tot_cols']=range(len(data_file.columns)+1)
+			context['y_pred']=kmeans.labels_
+			Y_pred=np.matrix(kmeans.labels_).T
+			tot_zip=np.concatenate([data_file, Y_pred], axis=1)
+			context['full_set']=np.array(tot_zip)
+			context['silhouette']=met.silhouette_score(X, labels=Y_pred)
+			context['chscore']=met.calinski_harabaz_score(X, labels=Y_pred)
+			context['form']=form
+
+			pca=PCA(n_components=2).fit(X)
+			pca_2d=pca.transform(X)
+			print(X.shape)
+			print(pca_2d)
+			y_pred=[]
+			for r in kmeans.labels_:
+				y_pred.append("Cluster "+str(r))
+			full_set=np.concatenate([pca_2d, pd.DataFrame(np.matrix(y_pred)).T], axis=1)
+			print(full_set)
+			context['zip_json']=json.dumps(full_set.tolist())
+			return render_to_response("result_clust.html", context)
+	context['error']="This is an error page. You are not supposed to see this."
 	return render_to_response("home.html", context)
 
 class NewExperiment(CreateView):

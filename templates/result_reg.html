@@ -29,7 +29,7 @@
 	</div>
 	<script type="text/javascript">
 		 google.charts.load('current', {
-		   'packages': ['scatter','line']
+		   'packages': ['corechart']
 		 });
 		 google.charts.setOnLoadCallback(drawChart);
 		function drawChart () {
@@ -45,15 +45,19 @@
           height: 500,
           chart: {
             title: 'Predictions versus Test values',
-            subtitle: 'On a supervised regression algorithm'
+            subtitle: 'On a supervised regression algorithm',
           },
           hAxis: {title: 'Predicted values'},
-          vAxis: {title: 'Test values'}
+          vAxis: {title: 'Test values'},
+	 trendlines: { 0: {
+		type:'linear',
+		color: 'red'} },
+	legend:'none',
         };
 
-        var chart = new google.charts.Scatter(document.getElementById('scatterchart_material'));
+        var chart = new google.visualization.ScatterChart(document.getElementById('scatterchart_material'));
 
-        chart.draw(data, google.charts.Scatter.convertOptions(options));
+        chart.draw(data, options);// google.charts.Scatter.convertOptions(options));
       }		
 	</script>
 {% endblock %}
