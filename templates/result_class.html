@@ -24,7 +24,7 @@
 			{% endfor %}
 		</table>
 	</div>
-	<div>
+	<div class="responsive-table">
 		<h5 class="center"> Classification Report </h5>
 		{{ class_report|safe }}
 	</div>
@@ -32,7 +32,28 @@
 		<h5 class="center"> Confusion Matrix </h5>
 		{{ confusion_matrix|safe }}
 	</div>
-	<div id="scatterchart_material" class="center" style="display:none;">
+	<div class="responsive-table" style="overflow-x:scroll;">
+		<h5 class="center"> Result metric values for the classifier </h5>		
+		<table class="highlight centered">
+			<thead>
+				<tr> 
+					<th> Precision </th>
+					<th> Recall </th>
+					<th> F-Score </th>
+					<th> Accuracy </th>
+					<th> AUC </th>
+				</tr>
+			</thead>
+			<tbody>
+				<td> {{ precision }} </td>
+				<td> {{ recall }} </td>
+				<td> {{ fscore }} </td>
+				<td> {{ accuracy }} </td>
+				<td> {{ roc_auc }} </td>
+			</tbody>
+		</table>
+	</div>
+	<div id="linechart_material" class="center" style="display:block;">
 	</div>
 	</div>
 	<script type="text/javascript">
@@ -42,26 +63,28 @@
 		 google.charts.setOnLoadCallback(drawChart);
 		function drawChart () {
 
-        var data = new google.visualization.DataTable();
-        data.addColumn('string', 'Prediction Label');
-        data.addColumn('string', 'Test Label');
+			var data = new google.visualization.DataTable();
+//			{% for c in classes %}
+//				data.addColumns({{ c|safe }});
+//			{% endfor %}
+			data.addColumn('number',"False Positive Rate");
+			data.addColumn('number',"Macro averaged ROC curve with area:"+{{ roc_auc|safe }});
+			data.addRows({{ zip_json|safe }})
 
-        data.addRows({{ zip_json|safe }});
+			var options = {
+			  width: 800,
+			  height: 500,
+			  chart: {
+			    title: 'The Receiver operating Characteristic Curve',
+			    subtitle: 'On a supervised classification algorithm'
+			  },
+			  curveType:'function'
+			  
+			};
 
-        var options = {
-          width: 800,
-          height: 500,
-          chart: {
-            title: 'Predictions versus Test values',
-            subtitle: 'On a supervised regression algorithm'
-          },
-          hAxis: {title: 'Predicted values'},
-          vAxis: {title: 'Test values'}
-        };
+			var chart = new google.charts.Line(document.getElementById('linechart_material'));
 
-        var chart = new google.charts.Scatter(document.getElementById('scatterchart_material'));
-
-        chart.draw(data, google.charts.Scatter.convertOptions(options));
-      }		
-	</script>
+			chart.draw(data, google.charts.Line.convertOptions(options));
+      		}		
+	</script>				
 {% endblock %}

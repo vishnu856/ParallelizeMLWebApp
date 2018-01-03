@@ -23,6 +23,7 @@ from sklearn import preprocessing
 import codecs
 import json
 import sklearn.metrics as met
+from scipy import interp
 
 # Create your views here.
 
@@ -158,10 +159,37 @@ def process(context, form, **kwargs):
 				lookup[i]=c
 				i=i+1
 			conf_mat=pd.DataFrame(met.confusion_matrix(Y_test, Y_pred, labels=context['classes'])).rename(lookup, axis='index').rename(lookup, axis='columns')
-			print(lookup)
-			print(conf_mat)
 			context['confusion_matrix']=conf_mat.to_html()
-			context['zip_json']=json.dumps(zip_val)
+			prec, recall, fscore, support=met.precision_recall_fscore_support(Y_test, Y_pred, average="macro")
+			context['precision']=prec
+			context['recall']=recall
+			context['fscore']=fscore
+			context['accuracy']=met.accuracy_score(Y_test, Y_pred)
+			#print(Y)
+			bin_y=preprocessing.label_binarize(Y, classes=context['classes'])
+			bin_y_test=preprocessing.label_binarize(Y_test, classes=context['classes'])			
+			bin_y_pred=preprocessing.label_binarize(Y_pred, classes=context['classes'])			
+			n_classes=bin_y.shape[1]
+			fpr=dict()
+			tpr=dict()
+			roc_auc = dict()
+
+			print(n_classes)
+			for i in range(n_classes):
+				fpr[i], tpr[i], _ = met.roc_curve(bin_y_test[:, i], bin_y_pred[:, i])
+				roc_auc[i] = met.auc(fpr[i], tpr[i])
+			all_fpr = np.unique(np.concatenate([fpr[i] for i in range(n_classes)]))
+			mean_tpr = np.zeros_like(all_fpr)
+			for i in range(n_classes):
+			    mean_tpr += interp(all_fpr, fpr[i], tpr[i])
+			mean_tpr /= n_classes
+			context['fpr']=all_fpr
+			context['tpr']=mean_tpr
+			context['roc_auc']=met.auc(all_fpr, mean_tpr)
+			print(all_fpr)
+			print(mean_tpr)			
+
+			context['zip_json']=json.dumps(list(zip(all_fpr, mean_tpr)))
 			context['form']=form
 			# here you can add things like:
 			return render_to_response("result_class.html",context)
