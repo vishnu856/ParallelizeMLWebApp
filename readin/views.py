@@ -21,6 +21,7 @@ from sklearn.model_selection import cross_val_predict
 import csv
 from sklearn import preprocessing
 import codecs
+from sklearn.cluster import KMeans
 import json
 import sklearn.metrics as met
 from scipy import interp
@@ -115,13 +116,12 @@ def report2dict(cr):
     return D_class_data
 
 def process(context, form, **kwargs):
-	target=form.cleaned_data['target']
 	inputfile=form.cleaned_data['inputfile']
 	data_file=pd.DataFrame(pd.read_csv(inputfile, sep=','))
+	print(data_file)
+	X=data_file
 	#df, targets= encode_target(data_file, target)		
-	X=data_file.loc[:, data_file.columns!=target]
 	#X=X.loc[:, X.columns!="Encode"+str(target)]
-	Y=data_file[str(target)]
 #	print(Y)
 	for i in X.columns:
 		if isinstance(X.at[0,i],str):
@@ -130,6 +130,9 @@ def process(context, form, **kwargs):
 
 	algorithm_choice=form.cleaned_data['algorithm_choice']
 	if algorithm_choice == 'S':
+		X=data_file.loc[:, data_file.columns!=target]
+		target=form.cleaned_data['target']
+		Y=data_file[str(target)]
 		validation_split=form.cleaned_data['validation_split']
 		#X_train, X_test, Y_train, Y_test=train_test_split(X,Y,test_size=1-(float(validation_split)/100), random_state=100)
 		method_super=form.cleaned_data['method_super']
@@ -220,7 +223,12 @@ def process(context, form, **kwargs):
 			# here you can add things like:
 			return render_to_response("result_reg.html",context)
 		context['error']="This is an error page. You are not supposed to see this."
-		return render_to_response("home.html", context)
+	if algorithm_choice == 'U':
+		method_unsuper=form.cleaned_data['method_unsuper']
+		if method_unsuper=='C':
+			kmeans=KMeans(n_clusters=form.cleaned_data['no_clusters']).fit(X)
+			print(kmeans.labels_)
+	return render_to_response("home.html", context)
 
 class NewExperiment(CreateView):
 	model = Post
