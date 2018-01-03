@@ -5,6 +5,7 @@
 	<h4 class="center"> Edit Information </h4>
 	{% load material_form %}
 	<form action="" method="post" enctype="multipart/form-data"> {% csrf_token %}		
+			
 		<div class="red-text center">{{ form.non_field_errors }}</div>
 		<div class="red-text center">{{ form.source_errors }}</div>
 		{{ form.source }}
@@ -22,7 +23,7 @@
 					{{ form.inputfile }}
 				</div>
 				 <div class="file-path-wrapper">
-					<input class="file-path validate" type="text" placeholder="Upload new file.">
+					<input class="file-path validate" type="text" placeholder="Upload file">
 				 </div>
 			</div>
 			<div class="row">
