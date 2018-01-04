@@ -142,7 +142,7 @@ def process(context, form, **kwargs):
 			clf_gini=DecisionTreeClassifier(criterion="gini", random_state=100, max_depth=32, min_samples_leaf=5)
 			clf_gini.fit(X, Y)
 			Y_pred=cross_val_predict(clf_gini, X, Y, cv=int(100-validation_split)) #clf_gini.predict(X_test)	
-			X_test=X
+			X_test=data_file
 			Y_test=Y
 			context['x_cols']=X_test.columns
 			context['tot_cols']=range(len(X_test.columns)+2)
@@ -206,7 +206,7 @@ def process(context, form, **kwargs):
 #			print(Y)
 #			Y_pred=lr.predict(X_test)
 			Y_pred=cross_val_predict(rgr_gini, X, Y, cv=int(100-validation_split))
-			X_test=X
+			X_test=data_file
 			Y_test=Y
 			context['x_cols']=X_test.columns
 			context['tot_cols']=range(len(X_test.columns)+2)
