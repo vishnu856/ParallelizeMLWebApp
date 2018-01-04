@@ -17,7 +17,7 @@ from sklearn import tree
 from sklearn import utils
 from sklearn.feature_extraction import DictVectorizer as DV
 from sklearn.linear_model import LinearRegression
-from sklearn.model_selection import cross_val_predict
+from sklearn.model_selection import cross_val_predict, train_test_split
 from sklearn.decomposition import PCA
 import csv
 from sklearn import preprocessing
@@ -120,20 +120,20 @@ def report2dict(cr):
 def process(context, form, **kwargs):
 	inputfile=form.cleaned_data['inputfile']
 	data_file=pd.DataFrame(pd.read_csv(inputfile, sep=','))
-#	print(data_file)
-	X=data_file
 	#df, targets= encode_target(data_file, target)		
 	#X=X.loc[:, X.columns!="Encode"+str(target)]
 #	print(Y)
-	for i in X.columns:
-		if isinstance(X.at[0,i],str):
-			X, col=encode_target(X, i)
-			X=X.loc[:, X.columns!=i]
+	X=data_file
 
 	algorithm_choice=form.cleaned_data['algorithm_choice']
 	if algorithm_choice == 'S':
 		target=form.cleaned_data['target']
-		X=X.loc[:, X.columns!=target]
+		X=data_file.loc[:, data_file.columns!=target]
+		for i in X.columns:
+			if isinstance(X.at[0,i],str):
+				X, col=encode_target(X, i)
+				X=X.loc[:, X.columns!=i]
+
 		Y=data_file[str(target)]
 		validation_split=form.cleaned_data['validation_split']
 		#X_train, X_test, Y_train, Y_test=train_test_split(X,Y,test_size=1-(float(validation_split)/100), random_state=100)
@@ -199,7 +199,6 @@ def process(context, form, **kwargs):
 			# here you can add things like:
 			return render_to_response("result_class.html",context)
 
-
 		if method_super == 'R':
 			lr=LinearRegression()
 			rgr_gini=DecisionTreeRegressor(criterion="mse", random_state=128, max_depth=32, min_samples_leaf=1)
@@ -219,6 +218,12 @@ def process(context, form, **kwargs):
 			val_set=np.concatenate([X_test, Y_test], axis=1)
 			test_zip=np.concatenate([val_set, Y_pred],axis=1)
 			context['full_set']=np.array(test_zip)
+			context['explained_variance_score']=met.explained_variance_score(Y_test, Y_pred)
+			context['mean_absolute_error']=met.mean_absolute_error(Y_test, Y_pred)
+			context['mean_squared_error']=met.mean_squared_error(Y_test, Y_pred)
+			context['mean_squared_log_error']=met.mean_squared_log_error(Y_test, Y_pred)
+			context['median_absolute_error']=met.median_absolute_error(Y_test, Y_pred)
+			context['r2_score']=met.r2_score(Y_test, Y_pred)
 #			print(zip_val)
 			context['zip_json']=json.dumps(zip_val)
 			context['form']=form
@@ -226,6 +231,10 @@ def process(context, form, **kwargs):
 			return render_to_response("result_reg.html",context)
 	if algorithm_choice == 'U':
 		method_unsuper=form.cleaned_data['method_unsuper']
+		for i in X.columns:
+			if isinstance(X.at[0,i],str):
+				X, col=encode_target(X, i)
+				X=X.loc[:, X.columns!=i]
 		if method_unsuper=='C':
 			kmeans=KMeans(n_clusters=form.cleaned_data['no_clusters']).fit(X)
 			context['x_cols']=data_file.columns

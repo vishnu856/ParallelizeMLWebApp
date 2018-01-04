@@ -24,6 +24,29 @@
 			{% endfor %}
 		</table>
 	</div>
+	<div class="responsive-table" style="overflow-x:scroll;">
+		<h5 class="center"> Result metric values for the regressor </h5>		
+		<table class="highlight centered">
+			<thead>
+				<tr> 
+					<th> Explained Variance Score </th>
+					<th> Mean Absolute Error </th>
+					<th> Mean Squared Error </th>
+					<th> Mean Squared Log Error </th>
+					<th> Median Absolute Error </th>
+					<th> r2 Score </th>
+				</tr>
+			</thead>
+			<tbody>
+				<td> {{ explained_variance_score }} </td>
+				<td> {{ mean_absolute_error }} </td>
+				<td> {{ mean_squared_error }} </td>
+				<td> {{ mean_squared_log_error }} </td>
+				<td> {{ median_absolute_error }} </td>
+				<td> {{ r2_score }} </td>
+			</tbody>
+		</table>
+	</div>
 	<div id="scatterchart_material" class="center" style="display:block;">
 	</div>
 	</div>
@@ -35,8 +58,8 @@
 		function drawChart () {
 
         var data = new google.visualization.DataTable();
-        data.addColumn('number', 'Prediction Label');
-        data.addColumn('number', 'Test Label');
+        data.addColumn('number');
+        data.addColumn('number');
 
         data.addRows({{ zip_json|safe }});
 
@@ -47,8 +70,8 @@
             title: 'Predictions versus Test values',
             subtitle: 'On a supervised regression algorithm',
           },
-          hAxis: {title: 'Predicted values'},
-          vAxis: {title: 'Test values'},
+          hAxis: {title: 'Test values'},
+          vAxis: {title: 'Predicted values'},
 	 trendlines: { 0: {
 		type:'linear',
 		color: 'red'} },
