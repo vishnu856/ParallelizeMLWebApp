@@ -33,6 +33,12 @@ class Post(models.Model):
 		('SVR', 'Support Vector Regression'),
 		('LR', 'Linear Regression'),
 	)
+	ALGO_CLUST_CHOICES=(
+		('KM', 'K-Means Clustering'),
+		('SC', 'Spectral Clustering'),
+		('AC', 'Agglomerative Clustering'),
+		('BC', 'Birch Clustering'),
+	)
 	title=models.CharField(max_length=200, default="Untitled")
 	inputfile=models.FileField(upload_to=user_directory_path, null=True, blank=True)
 	comments=models.CharField(max_length=500, blank=True, null=True)
@@ -49,7 +55,9 @@ class Post(models.Model):
 
 	method_unsuper=models.CharField(max_length=128, choices=ALGO_UNSUPER_CHOICES, blank=True)
 	no_features=models.PositiveSmallIntegerField(default=2)
+
 	no_clusters=models.PositiveSmallIntegerField(default=2)
+	method_clust=models.CharField(max_length=128, choices=ALGO_CLUST_CHOICES, blank=True)	
 
 	def get_absolute_url(self):
 		return reverse('home')

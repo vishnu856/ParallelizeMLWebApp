@@ -24,7 +24,7 @@ from sklearn.decomposition import PCA
 import csv
 from sklearn import preprocessing
 import codecs
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, SpectralClustering, AgglomerativeClustering, Birch
 import json
 import sklearn.metrics as met
 from scipy import interp
@@ -81,6 +81,9 @@ class NewExperimentForm(forms.ModelForm):
 			if algorithm_choice == 'U':
 				if method_unsuper is None:
 					raise ValidationError(('Need to fill in all options for Unsupervised learning.'))
+				method_clust=cleaned_data.get("method_clust")
+				if method_unsuper == 'C' and method_clust is None:
+					raise ValidationError(('Need to fill in all options for Clustering.'))
 		else:
 			raise ValidationError(('Need to select method of learning.'))						
 		return cleaned_data
@@ -256,11 +259,19 @@ def process(context, form, **kwargs):
 				X, col=encode_target(X, i)
 				X=X.loc[:, X.columns!=i]
 		if method_unsuper=='C':
-			kmeans=KMeans(n_clusters=form.cleaned_data['no_clusters']).fit(X)
+			method_clust=form.cleaned_data['method_clust']
+			if method_clust == 'KM':
+				clust=KMeans(n_clusters=form.cleaned_data['no_clusters']).fit(X)
+			if method_clust == 'SC':
+				clust=SpectralClustering(n_clusters=form.cleaned_data['no_clusters']).fit(X)
+			if method_clust == 'AC':
+				clust=AgglomerativeClustering(n_clusters=form.cleaned_data['no_clusters']).fit(X)
+			if method_clust == 'BC':
+				clust=Birch(n_clusters=form.cleaned_data['no_clusters']).fit(X)
 			context['x_cols']=data_file.columns
 			context['tot_cols']=range(len(data_file.columns)+1)
-			context['y_pred']=kmeans.labels_
-			Y_pred=np.matrix(kmeans.labels_).T
+			context['y_pred']=clust.labels_
+			Y_pred=np.matrix(clust.labels_).T
 			tot_zip=np.concatenate([data_file, Y_pred], axis=1)
 			context['full_set']=np.array(tot_zip)
 			context['silhouette']=met.silhouette_score(X, labels=Y_pred)
@@ -269,13 +280,13 @@ def process(context, form, **kwargs):
 
 			pca=PCA(n_components=2).fit(X)
 			pca_2d=pca.transform(X)
-			print(X.shape)
-			print(pca_2d)
+			#print(X.shape)
+			#print(pca_2d)
 			y_pred=[]
-			for r in kmeans.labels_:
+			for r in clust.labels_:
 				y_pred.append("Cluster "+str(r))
 			full_set=np.concatenate([pca_2d, pd.DataFrame(np.matrix(y_pred)).T], axis=1)
-			print(full_set)
+			#print(full_set)
 			context['zip_json']=json.dumps(full_set.tolist())
 			return render_to_response("result_clust.html", context)
 	context['error']="This is an error page. You are not supposed to see this."
@@ -370,14 +381,20 @@ class EditExperimentForm(forms.ModelForm):
 			if algorithm_choice == 'S':
 				if method_super is None or target is None:
 					raise ValidationError(('Need to fill in all options for Supervised learning.'))
+				method_cl=cleaned_data.get("method_class")
+				if method_super=='C' and method_cl is None:
+					raise ValidationError(('Need to fill in all options for Classification.'))	
+				method_re=cleaned_data.get("method_reg")
+				if method_super=='R' and method_re is None:
+					raise ValidationError(('Need to fill in all options for Regression.'))					
 				#if target not in data_file:
 				#	raise ValidationError(('Specify a valid target present in the CSV!'+str(target)+' '+str(data_file.columns)))
 			if algorithm_choice == 'U':
 				if method_unsuper is None:
 					raise ValidationError(('Need to fill in all options for Unsupervised learning.'))
-		else:
-			raise ValidationError(('Need to select method of learning.'))						
-		return cleaned_data
+				method_clust=cleaned_data.get("method_clust")
+				if method_unsuper == 'C' and method_clust is None:
+					raise ValidationError(('Need to fill in all options for Clustering.'))
 
 class EditExperiment(UpdateView):
 	model=Post
