@@ -23,10 +23,12 @@ function showSuperDiv(elem)
 	if(elem.value=='C')
 	{
 		document.getElementById('hiddev_class').style.display="block";
+		document.getElementById('hiddev_reg').style.display="none";
 	}
 	else if(elem.value=='R')
 	{
 		document.getElementById('hiddev_class').style.display="none";
+		document.getElementById('hiddev_reg').style.display="block";
 	}
 }
 

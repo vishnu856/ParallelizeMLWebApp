@@ -17,9 +17,21 @@ class Post(models.Model):
 		('C', 'Classification'),
 		('R', 'Regression'),	
 	)
+	ALGO_CLASS_CHOICES=(
+		('DT','Decision Tree'),
+		('SVM','Support Vector Machine'),
+		('NN','Neural Network'),		
+		('LR','Logistic Regression'),
+	)
 	ALGO_UNSUPER_CHOICES=(
 		('C', 'Clustering'),
 		('F', 'Feature Selection'),
+	)
+	ALGO_REG_CHOICES=(
+		('DT', 'Decision Tree'),
+		('BR', 'Bayesian Ridge'),
+		('SVR', 'Support Vector Regression'),
+		('LR', 'Linear Regression'),
 	)
 	title=models.CharField(max_length=200, default="Untitled")
 	inputfile=models.FileField(upload_to=user_directory_path, null=True, blank=True)
@@ -29,6 +41,10 @@ class Post(models.Model):
 	validation_split=models.DecimalField(max_digits=3, decimal_places=1, default=75)
 	method_super=models.CharField(max_length=128, choices=ALGO_SUPER_CHOICES, blank=True)	
 	no_labels=models.PositiveSmallIntegerField(default=2)
+
+	method_class=models.CharField(max_length=128, choices=ALGO_CLASS_CHOICES, blank=True)	
+	method_reg=models.CharField(max_length=128, choices=ALGO_REG_CHOICES, blank=True)	
+
 	target=models.CharField(max_length=500, blank=True, null=True)
 
 	method_unsuper=models.CharField(max_length=128, choices=ALGO_UNSUPER_CHOICES, blank=True)

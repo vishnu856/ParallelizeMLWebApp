@@ -16,7 +16,9 @@ from sklearn.metrics import accuracy_score
 from sklearn import tree
 from sklearn import utils
 from sklearn.feature_extraction import DictVectorizer as DV
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, LogisticRegression, BayesianRidge
+import sklearn.svm as svm
+import sklearn.neural_network as NN
 from sklearn.model_selection import cross_val_predict, train_test_split
 from sklearn.decomposition import PCA
 import csv
@@ -68,6 +70,12 @@ class NewExperimentForm(forms.ModelForm):
 			if algorithm_choice == 'S':
 				if method_super is None or target is None:
 					raise ValidationError(('Need to fill in all options for Supervised learning.'))
+				method_cl=cleaned_data.get("method_class")
+				if method_super=='C' and method_cl is None:
+					raise ValidationError(('Need to fill in all options for Classification.'))	
+				method_re=cleaned_data.get("method_reg")
+				if method_super=='R' and method_re is None:
+					raise ValidationError(('Need to fill in all options for Regression.'))					
 				#if target not in data_file:
 				#	raise ValidationError(('Specify a valid target present in the CSV!'+str(target)+' '+str(data_file.columns)))
 			if algorithm_choice == 'U':
@@ -139,9 +147,17 @@ def process(context, form, **kwargs):
 		#X_train, X_test, Y_train, Y_test=train_test_split(X,Y,test_size=1-(float(validation_split)/100), random_state=100)
 		method_super=form.cleaned_data['method_super']
 		if method_super == 'C':
-			clf_gini=DecisionTreeClassifier(criterion="gini", random_state=100, max_depth=32, min_samples_leaf=5)
-			clf_gini.fit(X, Y)
-			Y_pred=cross_val_predict(clf_gini, X, Y, cv=int(100-validation_split)) #clf_gini.predict(X_test)	
+			method_class=form.cleaned_data['method_class']
+			if method_class == 'DT':
+				clf=DecisionTreeClassifier(criterion="gini", random_state=100, max_depth=32, min_samples_leaf=5)
+				#clf_gini.fit(X, Y)
+			if method_class == 'SVM':
+				clf=svm.LinearSVC()
+			if method_class == 'NN':
+				clf=NN.MLPClassifier()	
+			if method_class == 'LR':
+				clf=LogisticRegression()
+			Y_pred=cross_val_predict(clf, X, Y, cv=int(100-validation_split)) #clf_gini.predict(X_test)
 			X_test=data_file
 			Y_test=Y
 			context['x_cols']=X_test.columns
@@ -200,12 +216,16 @@ def process(context, form, **kwargs):
 			return render_to_response("result_class.html",context)
 
 		if method_super == 'R':
-			lr=LinearRegression()
-			rgr_gini=DecisionTreeRegressor(criterion="mse", random_state=128, max_depth=32, min_samples_leaf=1)
-#			lr.fit(X_train, Y_train)
-#			print(Y)
-#			Y_pred=lr.predict(X_test)
-			Y_pred=cross_val_predict(rgr_gini, X, Y, cv=int(100-validation_split))
+			method_reg=form.cleaned_data['method_reg']
+			if method_reg == 'LR':			
+				rgr=LinearRegression()
+			if method_reg == 'DT':	
+				rgr=DecisionTreeRegressor(criterion="mse", random_state=128, max_depth=32, min_samples_leaf=1)
+			if method_reg == 'BR':
+				rgr=BayesianRidge()
+			if method_reg == 'SVR':
+				rgr=svm.SVR()
+			Y_pred=cross_val_predict(rgr, X, Y, cv=int(100-validation_split))
 			X_test=data_file
 			Y_test=Y
 			context['x_cols']=X_test.columns
@@ -325,7 +345,10 @@ class EditExperimentForm(forms.ModelForm):
 		model = Post
 		fields='__all__'
 		widgets={
-			'inputfile': forms.FileInput,		
+			'inputfile': forms.FileInput,	
+			'algorithm_choice': forms.Select(attrs={'onchange':"showDiv(this);"}),
+			'method_super': forms.Select(attrs={'onchange':"showSuperDiv(this);"}),
+			'method_unsuper': forms.Select(attrs={'onchange':"showUnsuperDiv(this);"}),	
 		}
 	
 	def clean(self):

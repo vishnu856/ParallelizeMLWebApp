@@ -62,6 +62,22 @@
 						<label for="id_no_labels">Number of classes</label>		
 					</div>		
 					</div>	
+					<div class="row">
+					<div class="input-field col s12">
+						{{ form.method_class.errors }}
+						{{ form.method_class }}				
+						<label for="id_method_class">Choose Classification Algorithm</label>		
+					</div>		
+					</div>	
+				</div>
+				<div id="hiddev_reg" style="display: none;">
+					<div class="row">
+					<div class="input-field col s12">
+						{{ form.method_reg.errors }}
+						{{ form.method_reg }}
+						<label for="id_method_reg">Choose Regression Algorithm</label>
+					</div>
+					</div>
 				</div>
 				<div class="row">
 				<div class="input-field col s12">
