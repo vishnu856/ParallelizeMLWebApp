@@ -127,13 +127,10 @@ def report2dict(cr):
             D_class_data[class_label][m.strip()] = float(row[j + 1].strip())
     return D_class_data
 
-def process(context, form, **kwargs):
-	inputfile=form.cleaned_data['inputfile']
-	if inputfile is not None:
-		data_file=pd.DataFrame(pd.read_csv(inputfile, sep=','))
-	else:
-		data_file=Post.objects.get(pk=context['pk']).get_inputfile_as_DF()
+def process(data_file, context, form, **kwargs):
+
 	X=data_file
+
 	algorithm_choice=form.cleaned_data['algorithm_choice']
 	if algorithm_choice == 'S':
 		target=form.cleaned_data['target']
@@ -304,7 +301,9 @@ class NewExperiment(CreateView):
 
 	def form_valid(self, form, **kwargs):
 		context = self.get_context_data(**kwargs)
-		temp=process(context, form, **kwargs)
+		inputfile=form.cleaned_data['inputfile']
+		data_file=pd.DataFrame(pd.read_csv(inputfile, sep=','))
+		temp=process(data_file, context, form, **kwargs)
 		self.object=form.save()
 		return temp
 
@@ -321,9 +320,9 @@ class NewExperiment(CreateView):
 class EditExperimentForm(forms.ModelForm):
 	class Meta:
 		model = Post
-		fields='__all__'
+		exclude=['inputfile']
 		widgets={
-			'inputfile': forms.FileInput,	
+#			'inputfile': forms.FileInput,	
 			'algorithm_choice': forms.Select(attrs={'onchange':"showDiv(this);"}),
 			'method_super': forms.Select(attrs={'onchange':"showSuperDiv(this);"}),
 			'method_unsuper': forms.Select(attrs={'onchange':"showUnsuperDiv(this);"}),	
@@ -376,10 +375,12 @@ class EditExperiment(UpdateView):
 
 	def form_valid(self, form, **kwargs):
 		context = self.get_context_data(**kwargs)
-		temp=process(context, form, **kwargs)
+		p=Post.objects.get(pk=context['pk'])
+		data_file=p.get_inputfile_as_DF()
+		temp=process(data_file, context, form, **kwargs)
 		self.object=form.save(commit=False)
 		self.object.pk=kwargs['pk']
-		self.object.save(force_update=True)
+		self.object.save(update_fields=[f.name for f in Post._meta.get_fields() if f.name !='inputfile' and f.name != 'id'], force_update=True)
 		return temp
 
 
