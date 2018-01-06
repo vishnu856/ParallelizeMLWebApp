@@ -133,11 +133,7 @@ def process(context, form, **kwargs):
 		data_file=pd.DataFrame(pd.read_csv(inputfile, sep=','))
 	else:
 		data_file=Post.objects.get(pk=context['pk']).get_inputfile_as_DF()
-	#df, targets= encode_target(data_file, target)		
-	#X=X.loc[:, X.columns!="Encode"+str(target)]
-#	print(Y)
 	X=data_file
-
 	algorithm_choice=form.cleaned_data['algorithm_choice']
 	if algorithm_choice == 'S':
 		target=form.cleaned_data['target']
