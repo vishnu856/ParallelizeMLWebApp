@@ -28,7 +28,7 @@ from sklearn.cluster import KMeans, SpectralClustering, AgglomerativeClustering,
 import json
 import sklearn.metrics as met
 from scipy import interp
-import matplotlib.pyplot as pl, mpld3
+from formtools.preview import FormPreview
 
 # Create your views here.
 
@@ -86,8 +86,7 @@ class NewExperimentForm(forms.ModelForm):
 					raise ValidationError(('Need to fill in all options for Clustering.'))
 		else:
 			raise ValidationError(('Need to select method of learning.'))						
-		return cleaned_data
-
+		return cleaned_data	
 
 def encode_target(df, target_column):
     """Add column to df with integers for the target.
@@ -130,7 +129,10 @@ def report2dict(cr):
 
 def process(context, form, **kwargs):
 	inputfile=form.cleaned_data['inputfile']
-	data_file=pd.DataFrame(pd.read_csv(inputfile, sep=','))
+	if inputfile is not None:
+		data_file=pd.DataFrame(pd.read_csv(inputfile, sep=','))
+	else:
+		data_file=Post.objects.get(pk=context['pk']).get_inputfile_as_DF()
 	#df, targets= encode_target(data_file, target)		
 	#X=X.loc[:, X.columns!="Encode"+str(target)]
 #	print(Y)
@@ -161,7 +163,7 @@ def process(context, form, **kwargs):
 			if method_class == 'LR':
 				clf=LogisticRegression()
 			Y_pred=cross_val_predict(clf, X, Y, cv=int(100-validation_split)) #clf_gini.predict(X_test)
-			X_test=data_file
+			X_test=data_file.loc[:, data_file.columns!=target]
 			Y_test=Y
 			context['x_cols']=X_test.columns
 			context['tot_cols']=range(len(X_test.columns)+2)
@@ -229,7 +231,7 @@ def process(context, form, **kwargs):
 			if method_reg == 'SVR':
 				rgr=svm.SVR()
 			Y_pred=cross_val_predict(rgr, X, Y, cv=int(100-validation_split))
-			X_test=data_file
+			X_test=data_file.loc[:, data_file.columns!=target]
 			Y_test=Y
 			context['x_cols']=X_test.columns
 			context['tot_cols']=range(len(X_test.columns)+2)
@@ -318,38 +320,7 @@ class NewExperiment(CreateView):
 		if form.is_valid():
 			return self.form_valid(form, **kwargs)
 		else:
-		    return self.form_invalid(form, **kwargs)
-
-'''
-def newExperiment(request):
-	if request.method== 'POST':
-		form=NewExperimentForm(request.POST, request.FILES)
-		if form.is_valid():			
-			target=form.cleaned_data['target']
-			inputfile=request.FILES['inputfile']
-			if inputfile:
-				Post(inputfile=inputfile).save()
-				data_file=pd.DataFrame(pd.read_csv(inputfile, sep=','))
-				X=data_file.loc[:, data_file.columns!=target]		
-				Y=data_file.loc[:, data_file.columns==target]
-				X_train, Y_train, X_test, Y_test=train_test_split(X,Y,test_size=0.3, random_state=100)
-				algorithm_choice=form.cleaned_data['algorithm_choice']
-				if algorithm_choice == 'S':
-					method_super=form.cleaned_data['method_super']
-					if method_super == 'C':
-						clf_gini=DecisionTreeClassifier(criterion="gini", random_state=100, max_depth=3, min_samples_leaf=5)
-						clf_gini.fit(X_train, Y_train)
-						Y_pred=clf_gini.predict(X_test)
-						context['y_pred']=Y_pred
-						context['y_test']=Y_test
-				context['form']=form
-				# here you can add things like:
-				return render(request, "result.html",context)
-	else:
-		form=NewExperimentForm()
-	return render(request, 'post_new.html', {'form' : form})
-'''
-			
+		    return self.form_invalid(form, **kwargs)			
 
 class EditExperimentForm(forms.ModelForm):
 	class Meta:
@@ -424,7 +395,6 @@ class EditExperiment(UpdateView):
 		    return self.form_valid(form, **kwargs)
 		else:
 		    return self.form_invalid(form, **kwargs)
-	
 
 class DeleteExperiment(DeleteView):
 	model = Post

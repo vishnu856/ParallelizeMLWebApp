@@ -2,6 +2,7 @@ from django.db import models
 from os.path import basename
 from django.urls import reverse
 from django import forms
+import pandas as pd
 
 # Create your models here.
 
@@ -40,7 +41,7 @@ class Post(models.Model):
 		('BC', 'Birch Clustering'),
 	)
 	title=models.CharField(max_length=200, default="Untitled")
-	inputfile=models.FileField(upload_to=user_directory_path, null=True, blank=True)
+	inputfile=models.FileField(upload_to=user_directory_path, null=True, blank=True)	
 	comments=models.CharField(max_length=500, blank=True, null=True)
 	algorithm_choice=models.CharField(max_length=2, choices=ALGO_CHOICES, blank=True)
 	
@@ -64,3 +65,9 @@ class Post(models.Model):
 
 	def __str__(self):
 		return basename(self.title)
+
+	def get_inputfile_text(self):
+		return pd.DataFrame(pd.read_csv(self.inputfile, sep=',')).to_html(classes="highlight centered")
+	
+	def get_inputfile_as_DF(self):
+		return pd.DataFrame(pd.read_csv(self.inputfile, sep=','))

@@ -17,14 +17,8 @@
 					{{ form.title.label_tag }}
 				</div>
 			</div>
-			<div class="file-field input-field">
-				<div class="btn">
-					<span> Choose File </span>
-					{{ form.inputfile }}
-				</div>
-				 <div class="file-path-wrapper">
-					<input class="file-path validate" type="text" placeholder="Upload file">
-				 </div>
+			<div class="responsive-table" style="overflow-x:scroll; height: 80%;">
+				{{ object.get_inputfile_text|safe }}
 			</div>
 			<div class="row">
 				<div class="input-field col s12">		
