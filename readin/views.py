@@ -308,9 +308,11 @@ def process(data_file, context, form, **kwargs):
 		i=0
 		for c in fs_model.get_support():			
 			if c == True:
-				cols.append(data_file.columns[i])
+				print(i)
+				print(data_file.columns[i+1])
+				cols.append(data_file.columns[i+1])
 			i=i+1
-		#print(cols)
+		print(cols)
 		context['x_new_cols']=cols
 		context['x_cols']=[d for d in data_file.columns if d!=target]
 		context['full_set']=np.array(pd.DataFrame(data_file, columns=list(cols)))#np.array(X_new)
