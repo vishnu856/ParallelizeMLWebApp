@@ -296,11 +296,28 @@ def process(data_file, context, form, **kwargs):
 				X=X.loc[:, X.columns!=i]
 		try:
 			Y=X[target]
+			X=X.loc[:, X.columns!=target]
 		except KeyError as k:
 			Y=X["Encode "+str(target)]
+			X=X.loc[:, X.columns!="Encode "+str(target)]
 
-		X_new=pd.DataFrame(FS.SelectKBest(k=no_features).fit_transform(X, Y))
-		print(X_new)
+		fs_model=FS.SelectKBest(k=no_features)
+		X_new=pd.DataFrame(fs_model.fit_transform(X, Y))
+		#print(X_new)
+		cols=[]
+		i=0
+		for c in fs_model.get_support():			
+			if c == True:
+				cols.append(data_file.columns[i])
+			i=i+1
+		#print(cols)
+		context['x_new_cols']=cols
+		context['x_cols']=[d for d in data_file.columns if d!=target]
+		context['full_set']=np.array(pd.DataFrame(data_file, columns=list(cols)))#np.array(X_new)
+		context['scores']=fs_model.scores_
+		#print(context['scores'])
+		context['supports']=fs_model.get_support()
+		return render_to_response("result_feature.html", context)
 
 	context['error']="This is an error page. You are not supposed to see this."
 	return render_to_response("home.html", context)
