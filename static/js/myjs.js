@@ -4,16 +4,29 @@ function showDiv(elem)
 	if(elem.value=="S")
 	{	
 		document.getElementById('hiddev_super').style.display = "block";
+		document.getElementById('hiddev_target').style.display = "block";
 		document.getElementById('hiddev_unsuper').style.display = "none";
+		document.getElementById('hiddev_feature').style.display = "none";
 	}
 	else if(elem.value=="U")
 	{	
 		document.getElementById('hiddev_super').style.display = "none";
+		document.getElementById('hiddev_target').style.display = "none";
+		document.getElementById('hiddev_feature').style.display = "none";
 		document.getElementById('hiddev_unsuper').style.display = "block";
+	}
+	else if(elem.value=="F")
+	{
+		document.getElementById('hiddev_super').style.display = "none";
+		document.getElementById('hiddev_unsuper').style.display = "none";		
+		document.getElementById('hiddev_target').style.display = "block";
+		document.getElementById('hiddev_feature').style.display = "block";
 	}
 	else
 	{	
 		document.getElementById('hiddev_super').style.display = "none";
+		document.getElementById('hiddev_target').style.display = "none";
+		document.getElementById('hiddev_feature').style.display = "none";
 		document.getElementById('hiddev_unsuper').style.display = "none";
 	}	
 }

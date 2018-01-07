@@ -79,16 +79,25 @@
 					</div>
 					</div>
 				</div>
-				<div class="row">
-				<div class="input-field col s12">
-					{{ form.target.errors }}
-					{{ form.target }}				
-					<label for="id_target">Prediction variable name:</label>		
-				</div>		
-				</div>	
 				<script type="text/javascript">
 					showSuperDiv(document.getElementById('id_method_super'));			
 				</script>
+			</div>
+			<div id="hiddev_target" style="display: none;" class="row">
+			<div class="input-field col s12">
+				{{ form.target.errors }}
+				{{ form.target }}				
+				<label for="id_target">Prediction variable name:</label>		
+			</div>		
+			</div>	
+			<div id="hiddev_feature" style="display: none;">
+				<div class="row">
+					<div class="input-field col s12">
+						{{ form.no_features.errors }}
+						{{ form.no_features }}
+						<label for="id_no_features"> Enter number of desired features </label>
+					</div>
+				</div>
 			</div>
 			<div id="hiddev_unsuper" style="display: none;">
 				<div class="row">
@@ -111,15 +120,6 @@
 						{{ form.method_clust.errors }}
 						{{ form.method_clust }}				
 						<label for="id_method_clust">Clustering method</label>		
-					</div>		
-					</div>										
-				</div>
-				<div id="hiddev_features" style="display : none;">
-					<div class="row">
-					<div class="input-field col s12">
-						{{ form.no_features.errors }}
-						{{ form.no_features }}				
-						<label for="id_no_features">Number of features</label>		
 					</div>		
 					</div>										
 				</div>

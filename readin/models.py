@@ -13,6 +13,7 @@ class Post(models.Model):
 	ALGO_CHOICES=(
 		('S','Supervised'),
 		('U','Unsupervised'),
+		('F', 'Feature Selection'),
 	)
 	ALGO_SUPER_CHOICES=(
 		('C', 'Classification'),
@@ -26,7 +27,6 @@ class Post(models.Model):
 	)
 	ALGO_UNSUPER_CHOICES=(
 		('C', 'Clustering'),
-		('F', 'Feature Selection'),
 	)
 	ALGO_REG_CHOICES=(
 		('DT', 'Decision Tree'),
@@ -55,10 +55,11 @@ class Post(models.Model):
 	target=models.CharField(max_length=500, blank=True, null=True)
 
 	method_unsuper=models.CharField(max_length=128, choices=ALGO_UNSUPER_CHOICES, blank=True)
-	no_features=models.PositiveSmallIntegerField(default=2)
 
 	no_clusters=models.PositiveSmallIntegerField(default=2)
 	method_clust=models.CharField(max_length=128, choices=ALGO_CLUST_CHOICES, blank=True)	
+
+	no_features=models.PositiveSmallIntegerField(default=2)
 
 	def get_absolute_url(self):
 		return reverse('home')
@@ -70,4 +71,4 @@ class Post(models.Model):
 		return pd.DataFrame(pd.read_csv(self.inputfile, sep=',')).to_html(classes="highlight centered")
 	
 	def get_inputfile_as_DF(self):
-		return pd.DataFrame(pd.read_csv(self.inputfile, sep=','))
+		return pd.DataFrame(pd.read_csv(self.inputfile, sep=',', keep_default_na=False))

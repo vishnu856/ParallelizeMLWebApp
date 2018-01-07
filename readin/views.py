@@ -16,6 +16,7 @@ from sklearn.metrics import accuracy_score
 from sklearn import tree
 from sklearn import utils
 from sklearn.feature_extraction import DictVectorizer as DV
+import sklearn.feature_selection as FS
 from sklearn.linear_model import LinearRegression, LogisticRegression, BayesianRidge
 import sklearn.svm as svm
 import sklearn.neural_network as NN
@@ -105,7 +106,7 @@ def encode_target(df, target_column):
     df_mod = df.copy()
     targets = df_mod[target_column].unique()
     map_to_int = {name: n for n, name in enumerate(targets)}
-    df_mod["Encode"+str(target_column)] = df_mod[target_column].replace(map_to_int)
+    df_mod["Encode "+str(target_column)] = df_mod[target_column].replace(map_to_int)
 
     return (df_mod, targets)
 
@@ -129,7 +130,7 @@ def report2dict(cr):
 
 def process(data_file, context, form, **kwargs):
 
-	X=data_file
+	X=data_file.fillna(0)
 
 	algorithm_choice=form.cleaned_data['algorithm_choice']
 	if algorithm_choice == 'S':
@@ -156,6 +157,7 @@ def process(data_file, context, form, **kwargs):
 			if method_class == 'LR':
 				clf=LogisticRegression()
 			Y_pred=cross_val_predict(clf, X, Y, cv=int(100-validation_split)) #clf_gini.predict(X_test)
+			print(Y_pred)
 			X_test=data_file.loc[:, data_file.columns!=target]
 			Y_test=Y
 			context['x_cols']=X_test.columns
@@ -284,6 +286,22 @@ def process(data_file, context, form, **kwargs):
 			#print(full_set)
 			context['zip_json']=json.dumps(full_set.tolist())
 			return render_to_response("result_clust.html", context)
+	if algorithm_choice == 'F':
+		target=form.cleaned_data['target']
+		no_features=form.cleaned_data['no_features']
+		X=data_file
+		for i in X.columns:
+			if isinstance(X.at[0,i],str):
+				X, col=encode_target(X, i)
+				X=X.loc[:, X.columns!=i]
+		try:
+			Y=X[target]
+		except KeyError as k:
+			Y=X["Encode "+str(target)]
+
+		X_new=pd.DataFrame(FS.SelectKBest(k=no_features).fit_transform(X, Y))
+		print(X_new)
+
 	context['error']="This is an error page. You are not supposed to see this."
 	return render_to_response("home.html", context)
 
@@ -302,7 +320,7 @@ class NewExperiment(CreateView):
 	def form_valid(self, form, **kwargs):
 		context = self.get_context_data(**kwargs)
 		inputfile=form.cleaned_data['inputfile']
-		data_file=pd.DataFrame(pd.read_csv(inputfile, sep=','))
+		data_file=pd.DataFrame(pd.read_csv(inputfile, sep=',', keep_default_na=False))
 		temp=process(data_file, context, form, **kwargs)
 		self.object=form.save()
 		return temp
@@ -377,6 +395,7 @@ class EditExperiment(UpdateView):
 		context = self.get_context_data(**kwargs)
 		p=Post.objects.get(pk=context['pk'])
 		data_file=p.get_inputfile_as_DF()
+		print(form.cleaned_data["no_features"])
 		temp=process(data_file, context, form, **kwargs)
 		self.object=form.save(commit=False)
 		self.object.pk=kwargs['pk']
