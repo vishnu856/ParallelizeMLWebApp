@@ -153,10 +153,13 @@ def process(data_file, context, form, **kwargs):
 				#clf_gini.fit(X, Y)
 			if method_class == 'SVM':
 				clf=svm.LinearSVC()
+				params={'random_state':np.arange(1,100,5), 'C':np.arange(0.1, 1, 0.1)}
 			if method_class == 'NN':
 				clf=NN.MLPClassifier()	
+				params={'random_state':np.arange(1,100,5), 'hidden_layer_sizes':np.arange(50,100,2), 'alpha':np.arange(0.1,1,0.1), 'max_iter':np.arange(90, 100, 1)}
 			if method_class == 'LR':
 				clf=LogisticRegression()
+				params={'random_state':np.arange(1,100,5), 'C':np.arange(0.1, 1, 0.1), 'max_iter':np.arange(90, 100, 1)}
 			is_hyper=form.cleaned_data['is_hyper']
 			if is_hyper == 'Y':
 				grid_search=RandomizedSearchCV(clf, params)
@@ -228,13 +231,16 @@ def process(data_file, context, form, **kwargs):
 			method_reg=form.cleaned_data['method_reg']
 			if method_reg == 'LR':			
 				rgr=LinearRegression()
+				params={'n_jobs': np.arange(1,11,1)}
 			if method_reg == 'DT':	
 				rgr=DecisionTreeRegressor(criterion="mse", random_state=128, max_depth=32, min_samples_leaf=1)
 				params={'random_state':np.arange(1,100,5), 'max_depth': np.arange(1,31,2), 'min_samples_leaf': np.arange(1,10,2)}
 			if method_reg == 'BR':
 				rgr=BayesianRidge()
+				params={'lambda_1':np.arange(1,100,5), 'n_iter': np.arange(1,31,2), 'alpha_1': np.arange(1,10,2)}
 			if method_reg == 'SVR':
 				rgr=svm.SVR()
+				params={'max_iter':np.arange(1,100,5), 'C':np.arange(0.1, 1, 0.1)}
 			is_hyper=form.cleaned_data['is_hyper']
 			if is_hyper == 'Y':
 				grid_search=RandomizedSearchCV(rgr, params)
