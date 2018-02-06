@@ -164,7 +164,6 @@ def process(data_file, context, form, **kwargs):
 				grid_search.fit(X, Y)
 				Y_pred=grid_search.predict(X)
 				context['hyper_result']=pd.DataFrame(grid_search.cv_results_).to_html()
-				print(Y_pred)
 			else:
 				Y_pred=cross_val_predict(clf, X, Y, cv=int(100-validation_split)) #clf_gini.predict(X_test)
 
@@ -231,11 +230,20 @@ def process(data_file, context, form, **kwargs):
 				rgr=LinearRegression()
 			if method_reg == 'DT':	
 				rgr=DecisionTreeRegressor(criterion="mse", random_state=128, max_depth=32, min_samples_leaf=1)
+				params={'random_state':np.arange(1,100,5), 'max_depth': np.arange(1,31,2), 'min_samples_leaf': np.arange(1,10,2)}
 			if method_reg == 'BR':
 				rgr=BayesianRidge()
 			if method_reg == 'SVR':
 				rgr=svm.SVR()
-			Y_pred=cross_val_predict(rgr, X, Y, cv=int(100-validation_split))
+			is_hyper=form.cleaned_data['is_hyper']
+			if is_hyper == 'Y':
+				grid_search=RandomizedSearchCV(rgr, params)
+				#Y_pred=cross_val_predict(grid_search, X, Y, cv=int(100-validation_split))
+				grid_search.fit(X, Y)
+				Y_pred=grid_search.predict(X)
+				context['hyper_result']=pd.DataFrame(grid_search.cv_results_).to_html()
+			else:			
+				Y_pred=cross_val_predict(rgr, X, Y, cv=int(100-validation_split))
 			X_test=data_file.loc[:, data_file.columns!=target]
 			Y_test=Y
 			context['x_cols']=X_test.columns

@@ -24,6 +24,12 @@
 			{% endfor %}
 		</table>
 	</div>
+	{% if hyper_result %}
+	<h5 class="center"> Hyperparameter Tuning Report </h5>
+	<div class="responsive-table" style="overflow-x:scroll; height: 80%;">	
+		{{ hyper_result|safe }}
+	</div>
+	{% endif %}	
 	<div class="responsive-table" style="overflow-x:scroll;">
 		<h5 class="center"> Result metric values for the regressor </h5>		
 		<table class="highlight centered">
