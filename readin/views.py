@@ -344,7 +344,6 @@ class NewExperiment(CreateView):
 		self.object=form.save()
 		return temp
 
-
 	def post(self, request, *args, **kwargs):
 		self.object=None
 		form_class = self.get_form_class()
@@ -353,6 +352,13 @@ class NewExperiment(CreateView):
 			return self.form_valid(form, **kwargs)
 		else:
 		    return self.form_invalid(form, **kwargs)			
+
+class NewExperimentPreview(FormPreview):
+	form_template="post_new.html"
+	preview_template="post_detail.html"
+	
+	def done(self, request, cleaned_data):
+		return render_to_response("result_class.html")
 
 class EditExperimentForm(forms.ModelForm):
 	class Meta:
@@ -414,7 +420,7 @@ class EditExperiment(UpdateView):
 		context = self.get_context_data(**kwargs)
 		p=Post.objects.get(pk=context['pk'])
 		data_file=p.get_inputfile_as_DF()
-		print(form.cleaned_data["no_features"])
+		#print(form.cleaned_data["no_features"])
 		temp=process(data_file, context, form, **kwargs)
 		self.object=form.save(commit=False)
 		self.object.pk=kwargs['pk']

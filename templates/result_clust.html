@@ -5,14 +5,16 @@
 	<h4 class="center"> Results </h4>
 	<div class="container">
 	<div class="responsive-table" style="overflow-x:scroll; height: 80%;">
-		<table class="highlight centered">
+
+        <table class="highlight centered" id="myTable">
 			<thead>
 				<tr>		
 					{% for col in x_cols %}
-						<th> {{ col }} </th>					
+						<th><button onclick="exportTableToCSV(this)"> {{ col }} </button></th>
 					{% endfor %}		
-					<th> Cluster Label: </th>  
+					<th> <button onclick="exportTableToCSV(this)">Cluster Label: </button></th>
 				</tr>
+
 			</thead>
 			{% for y1 in full_set %}
 			<tbody>		
@@ -22,6 +24,104 @@
 			</tbody>
 			{% endfor %}
 		</table>
+
+	</div>
+    <div class="responsive-table" style="overflow-x:scroll; height: 80%;">
+   <h4 class="center"> EDA </h4>
+      <canvas id="bar-chart" width="8" height="4"></canvas>
+<script>
+
+function exportTableToCSV(element) {
+  var f = element.parentNode.cellIndex;
+    var count=0;
+    var cols1 = [];
+    var coll = [];
+    for (var i = 1; i < 300; i++) {
+
+
+        for (var j = f; j < f+1; j++)
+
+             var z = document.getElementById("myTable").rows[i].cells[j].innerText;
+              cols1.push(z);
+
+
+
+    }
+
+     var cols1Counter = {}, results = []; namess=[];
+    cols1.forEach(function (col1) {
+        if (!cols1Counter.hasOwnProperty(col1)) {
+            results.push(0);
+            namess.push(col1);
+            coll.push('#8e5ea2');
+            cols1Counter[col1] = 1;
+        }
+        else {
+
+            results.push(cols1Counter[col1]++);
+        }
+    });
+   var r=[];
+   var x=[];
+  for (var i=0; i<namess.length; i++)
+  {
+     x[i]=1;
+  }
+  var count=0;
+ for (var i=0; i<cols1.length; i++){
+
+    if (r.indexOf(cols1[i])==-1){
+    r.push(cols1[i]);
+    }
+    else {
+          for (var j=0; j<r.length; j++)
+          {
+          if(cols1[i] == r[j])
+          {
+        count++;
+        x[j] = count;
+        }
+        }
+    }
+
+    }
+
+var largest = Math.max.apply(Math, x);
+ var n = document.getElementById("myTable").rows[0].cells[f].innerText;
+new Chart(document.getElementById("bar-chart"), {
+
+    type: 'bar',
+    data: {
+      labels: namess,
+      datasets: [
+        {
+          label: "",
+          backgroundColor: coll,
+          data: x
+        }
+      ]
+    },
+    options: {
+      legend: { display: false },
+      title: {
+        display: true,
+        text: n,
+      },
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true,
+                    stepSize: 100000,
+                    min: 0,
+                    max: largest+5,
+                }
+            }]
+        }
+
+    }
+});
+}
+</script>
 	</div>
 	<div class="responsive-table" style="overflow-x:scroll;">
 		<h5 class="center"> Result metric values for the clustering technique: </h5>		
@@ -39,9 +139,10 @@
 		</table>
 	</div>
 	<div id="scatterchart_material" class="center" style="display:block;">
+
 	</div>
 	</div>
-	<script type="text/javascript">
+     <script type="text/javascript">
 		 google.charts.load('current', {
 		   'packages': ['corechart']
 		 });
@@ -68,12 +169,14 @@
 			  hAxis: {title: 'Principal Component 1'},
 		          vAxis: {title: 'Principal Component 2'},
 			  legend : 'none',
-			  
+
 			};
 
 			var chart = new google.visualization.ScatterChart(document.getElementById('scatterchart_material'));
 
 			chart.draw(data, options);// google.charts.Scatter.convertOptions(options));
-      		}		
-	</script>				
+
+		}
+
+	</script>
 {% endblock %}

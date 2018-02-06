@@ -40,6 +40,14 @@ class Post(models.Model):
 		('AC', 'Agglomerative Clustering'),
 		('BC', 'Birch Clustering'),
 	)
+	ALGO_HYPERPARAM_TUNING=(
+		('GR', 'Grid Search CV'),
+		('RR', 'Randomized Search CV'),	
+	)
+	CHOICE_HYPERPARAM_TUNING=(
+		('Y', 'Yes'),
+		('N', 'No'),
+	)
 	title=models.CharField(max_length=200, default="Untitled")
 	inputfile=models.FileField(upload_to=user_directory_path, null=True, blank=True)	
 	comments=models.CharField(max_length=500, blank=True, null=True)
@@ -52,6 +60,9 @@ class Post(models.Model):
 	method_class=models.CharField(max_length=128, choices=ALGO_CLASS_CHOICES, blank=True)	
 	method_reg=models.CharField(max_length=128, choices=ALGO_REG_CHOICES, blank=True)	
 
+	is_hyper=models.CharField(max_length=128, choices=CHOICE_HYPERPARAM_TUNING, blank=True)
+	method_hyper=models.CharField(max_length=128, choices=ALGO_HYPERPARAM_TUNING, blank=True)	
+	
 	target=models.CharField(max_length=500, blank=True, null=True)
 
 	method_unsuper=models.CharField(max_length=128, choices=ALGO_UNSUPER_CHOICES, blank=True)
