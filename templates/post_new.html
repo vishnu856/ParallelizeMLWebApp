@@ -47,6 +47,15 @@
 					{{ form.validation_split.label_tag }}				
 				</div>		
 				</div>	
+				
+				<div class="row">
+				<div class="input-field col s12">
+					{{ form.is_hyper.errors }}
+					{{ form.is_hyper }}				
+					<label for="id_is_hyper"> Want to do hyperparameter tuning? </label>
+				</div>		
+				</div>	
+
 				<div class="row">
 				<div class="input-field col s12">
 					{{ form.method_super.errors }}

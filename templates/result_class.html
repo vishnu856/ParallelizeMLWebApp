@@ -28,6 +28,13 @@
 		<h5 class="center"> Classification Report </h5>
 		{{ class_report|safe }}
 	</div>
+	{% if hyper_result %}
+	<h5 class="center"> Hyperparameter Tuning Report </h5>
+	<div class="responsive-table" style="overflow-x:scroll; height: 80%;">	
+		{{ hyper_result|safe }}
+	</div>
+	{% endif %}	
+
 	<div>
 		<h5 class="center"> Confusion Matrix </h5>
 		{{ confusion_matrix|safe }}

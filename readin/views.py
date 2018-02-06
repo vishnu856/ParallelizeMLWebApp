@@ -20,7 +20,7 @@ import sklearn.feature_selection as FS
 from sklearn.linear_model import LinearRegression, LogisticRegression, BayesianRidge
 import sklearn.svm as svm
 import sklearn.neural_network as NN
-from sklearn.model_selection import cross_val_predict, train_test_split
+from sklearn.model_selection import cross_val_predict, train_test_split, GridSearchCV, RandomizedSearchCV
 from sklearn.decomposition import PCA
 import csv
 from sklearn import preprocessing
@@ -149,6 +149,7 @@ def process(data_file, context, form, **kwargs):
 			method_class=form.cleaned_data['method_class']
 			if method_class == 'DT':
 				clf=DecisionTreeClassifier(criterion="gini", random_state=100, max_depth=32, min_samples_leaf=5)
+				params={'random_state':np.arange(1,100,5), 'max_depth': np.arange(1,31,2), 'min_samples_leaf': np.arange(1,10,2)}
 				#clf_gini.fit(X, Y)
 			if method_class == 'SVM':
 				clf=svm.LinearSVC()
@@ -156,8 +157,17 @@ def process(data_file, context, form, **kwargs):
 				clf=NN.MLPClassifier()	
 			if method_class == 'LR':
 				clf=LogisticRegression()
-			Y_pred=cross_val_predict(clf, X, Y, cv=int(100-validation_split)) #clf_gini.predict(X_test)
-			print(Y_pred)
+			is_hyper=form.cleaned_data['is_hyper']
+			if is_hyper == 'Y':
+				grid_search=RandomizedSearchCV(clf, params)
+				#Y_pred=cross_val_predict(grid_search, X, Y, cv=int(100-validation_split))
+				grid_search.fit(X, Y)
+				Y_pred=grid_search.predict(X)
+				context['hyper_result']=pd.DataFrame(grid_search.cv_results_).to_html()
+				print(Y_pred)
+			else:
+				Y_pred=cross_val_predict(clf, X, Y, cv=int(100-validation_split)) #clf_gini.predict(X_test)
+
 			X_test=data_file.loc[:, data_file.columns!=target]
 			Y_test=Y
 			context['x_cols']=X_test.columns
