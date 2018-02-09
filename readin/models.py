@@ -40,13 +40,23 @@ class Post(models.Model):
 		('AC', 'Agglomerative Clustering'),
 		('BC', 'Birch Clustering'),
 	)
-	ALGO_HYPERPARAM_TUNING=(
-		('GR', 'Grid Search CV'),
-		('RR', 'Randomized Search CV'),	
-	)
 	CHOICE_HYPERPARAM_TUNING=(
 		('Y', 'Yes'),
 		('N', 'No'),
+	)
+	ALGO_CLASS_ENSEMBLE=(
+		('AdaC', 'Ada Boost Classifier'),
+		('BC', 'Bagging Classifier'),
+		('ETC', 'Extra Trees Classifier'),
+		('GBC', 'Gradient Boosting Classifier'),
+		('RFC', 'Random Forest Classifier'),
+	)
+	ALGO_REG_ENSEMBLE=(
+		('AdaR','Ada Boost Regressor'),
+		('BR','Bagging Regressor'),
+		('ETR','Extra Trees Regressor'),
+		('GBR','Gradient Boosting Regressor'),
+		('RFR','Random Forest Regressor'),
 	)
 	title=models.CharField(max_length=200, default="Untitled")
 	inputfile=models.FileField(upload_to=user_directory_path, null=True, blank=True)	
@@ -57,11 +67,16 @@ class Post(models.Model):
 	method_super=models.CharField(max_length=128, choices=ALGO_SUPER_CHOICES, blank=True)	
 	no_labels=models.PositiveSmallIntegerField(default=2)
 
+	is_class_ensemble=models.CharField(max_length=128, choices=CHOICE_HYPERPARAM_TUNING, blank=True)
+	method_class_ensemble=models.CharField(max_length=128, choices=ALGO_CLASS_ENSEMBLE, blank=True)
+
+	is_reg_ensemble=models.CharField(max_length=128, choices=CHOICE_HYPERPARAM_TUNING, blank=True)
+	method_reg_ensemble=models.CharField(max_length=128, choices=ALGO_REG_ENSEMBLE, blank=True)
+
 	method_class=models.CharField(max_length=128, choices=ALGO_CLASS_CHOICES, blank=True)	
 	method_reg=models.CharField(max_length=128, choices=ALGO_REG_CHOICES, blank=True)	
 
-	is_hyper=models.CharField(max_length=128, choices=CHOICE_HYPERPARAM_TUNING, blank=True)
-	method_hyper=models.CharField(max_length=128, choices=ALGO_HYPERPARAM_TUNING, blank=True)	
+	is_hyper=models.CharField(max_length=128, choices=CHOICE_HYPERPARAM_TUNING, blank=True)	
 	
 	target=models.CharField(max_length=500, blank=True, null=True)
 

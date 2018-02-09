@@ -33,20 +33,13 @@
 				{{ form.algorithm_choice }}	
 				{{ form.algorithm_choice.label_tag }}			
 			</div>			
+
 			<div id="hiddev_super" style="display: none;">
 				<div class="row">
 				<div class="input-field col s12">
 					{{ form.validation_split.errors }}
 					{{ form.validation_split }}				
 					{{ form.validation_split.label_tag }}				
-				</div>		
-				</div>	
-
-				<div class="row">
-				<div class="input-field col s12">
-					{{ form.is_hyper.errors }}
-					{{ form.is_hyper }}				
-					<label for="id_is_hyper"> Want to do hyperparameter tuning? </label>
 				</div>		
 				</div>	
 
@@ -65,27 +58,89 @@
 						<label for="id_no_labels">Number of classes</label>		
 					</div>		
 					</div>	
+
 					<div class="row">
 					<div class="input-field col s12">
-						{{ form.method_class.errors }}
-						{{ form.method_class }}				
-						<label for="id_method_class">Choose Classification Algorithm</label>		
+						{{ form.is_class_ensemble.errors }}
+						{{ form.is_class_ensemble }}				
+						<label for="id_is_ensemble"> Want to run ensemble models? </label>
 					</div>		
 					</div>	
+
+					<div id="hiddev_class_ensemble_yes" style="display: none;">
+						<div class="row">
+						<div class="input-field col s12">
+							{{ form.method_class_ensemble.errors }}
+							{{ form.method_class_ensemble }}				
+							<label for="id_method_class_ensemble">Choose ensemble classification method</label>				
+						</div>		
+						</div>					
+					</div>
+					<div id="hiddev_class_ensemble_no" style="display: none;">
+						<div class="row">
+						<div class="input-field col s12">
+							{{ form.method_class.errors }}
+							{{ form.method_class }}				
+							<label for="id_method_class">Choose Classification Algorithm</label>		
+						</div>		
+						</div>	
+						<div class="row">
+						<div class="input-field col s12">
+							{{ form.is_hyper.errors }}
+							{{ form.is_hyper }}				
+							<label for="id_is_hyper"> Want to do hyperparameter tuning? </label>
+						</div>		
+						</div>	
+					</div>
+					<script type="text/javascript">
+						showEnsembleClassDiv(document.getElementById('id_is_class_ensemble'));
+					</script>
 				</div>
 				<div id="hiddev_reg" style="display: none;">
 					<div class="row">
 					<div class="input-field col s12">
-						{{ form.method_reg.errors }}
-						{{ form.method_reg }}
-						<label for="id_method_reg">Choose Regression Algorithm</label>
+						{{ form.is_reg_ensemble.errors }}
+						{{ form.is_reg_ensemble }}				
+						<label for="id_is_ensemble"> Want to run ensemble models? </label>
+					</div>		
+					</div>	
+
+					<div id="hiddev_reg_ensemble_yes" style="display: none;">
+						<div class="row">
+						<div class="input-field col s12">
+							{{ form.method_reg_ensemble.errors }}
+							{{ form.method_reg_ensemble }}				
+							<label for="id_method_reg_ensemble">Choose ensemble regression method</label>				
+						</div>		
+						</div>					
 					</div>
+
+					<div id="hiddev_reg_ensemble_no" style="display: none;">
+						<div class="row">
+						<div class="input-field col s12">
+							{{ form.method_reg.errors }}
+							{{ form.method_reg }}
+							<label for="id_method_reg">Choose Regression Algorithm</label>
+						</div>
+						</div>
+
+						<div class="row">
+						<div class="input-field col s12">
+							{{ form.is_hyper.errors }}
+							{{ form.is_hyper }}				
+							<label for="id_is_hyper"> Want to do hyperparameter tuning? </label>
+						</div>		
+						</div>	
 					</div>
+					<script type="text/javascript">
+						showEnsembleRegDiv(document.getElementById('id_is_reg_ensemble'));
+					</script>
 				</div>
 				<script type="text/javascript">
 					showSuperDiv(document.getElementById('id_method_super'));			
 				</script>
 			</div>
+
 			<div id="hiddev_target" style="display: none;" class="row">
 			<div class="input-field col s12">
 				{{ form.target.errors }}

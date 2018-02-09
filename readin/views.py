@@ -29,6 +29,7 @@ from sklearn.cluster import KMeans, SpectralClustering, AgglomerativeClustering,
 import json
 import sklearn.metrics as met
 from scipy import interp
+import sklearn.ensemble as ensemble
 from formtools.preview import FormPreview
 
 # Create your views here.
@@ -50,6 +51,8 @@ class NewExperimentForm(forms.ModelForm):
 			'algorithm_choice': forms.Select(attrs={'onchange':"showDiv(this);"}),
 			'method_super': forms.Select(attrs={'onchange':"showSuperDiv(this);"}),
 			'method_unsuper': forms.Select(attrs={'onchange':"showUnsuperDiv(this);"}),
+			'is_class_ensemble': forms.Select(attrs={'onchange':"showEnsembleClassDiv(this);"}),
+			'is_reg_ensemble': forms.Select(attrs={'onchange':"showEnsembleRegDiv(this);"}),
 		}
 
 	def clean(self):
@@ -143,32 +146,58 @@ def process(data_file, context, form, **kwargs):
 
 		Y=data_file[str(target)]
 		validation_split=form.cleaned_data['validation_split']
+
 		#X_train, X_test, Y_train, Y_test=train_test_split(X,Y,test_size=1-(float(validation_split)/100), random_state=100)
 		method_super=form.cleaned_data['method_super']
 		if method_super == 'C':
-			method_class=form.cleaned_data['method_class']
-			if method_class == 'DT':
-				clf=DecisionTreeClassifier(criterion="gini", random_state=100, max_depth=32, min_samples_leaf=5)
-				params={'random_state':np.arange(1,100,5), 'max_depth': np.arange(1,31,2), 'min_samples_leaf': np.arange(1,10,2)}
-				#clf_gini.fit(X, Y)
-			if method_class == 'SVM':
-				clf=svm.LinearSVC()
-				params={'random_state':np.arange(1,100,5), 'C':np.arange(0.1, 1, 0.1)}
-			if method_class == 'NN':
-				clf=NN.MLPClassifier()	
-				params={'random_state':np.arange(1,100,5), 'hidden_layer_sizes':np.arange(50,100,2), 'alpha':np.arange(0.1,1,0.1), 'max_iter':np.arange(90, 100, 1)}
-			if method_class == 'LR':
-				clf=LogisticRegression()
-				params={'random_state':np.arange(1,100,5), 'C':np.arange(0.1, 1, 0.1), 'max_iter':np.arange(90, 100, 1)}
-			is_hyper=form.cleaned_data['is_hyper']
-			if is_hyper == 'Y':
-				grid_search=RandomizedSearchCV(clf, params)
-				#Y_pred=cross_val_predict(grid_search, X, Y, cv=int(100-validation_split))
-				grid_search.fit(X, Y)
-				Y_pred=grid_search.predict(X)
-				context['hyper_result']=pd.DataFrame(grid_search.cv_results_).to_html()
+			is_ensemble=form.cleaned_data['is_class_ensemble']
+			if is_ensemble == 'Y':
+				method_class_ensemble=form.cleaned_data['method_class_ensemble']
+				if method_class_ensemble == 'AdaC':
+					clf=ensemble.AdaBoostClassifier()
+					context['algo_name']="Ensemble Ada Boost Classifier"
+				if method_class_ensemble == 'BC':
+					clf=ensemble.BaggingClassifier()
+					context['algo_name']="Ensemble Bagging Classifier"
+				if method_class_ensemble == 'ETC':
+					clf=ensemble.ExtraTreesClassifier()
+					context['algo_name']="Ensemble Extra Trees Classifier"
+				if method_class_ensemble == 'GBC':
+					clf=ensemble.GradientBoostingClassifier()
+					context['algo_name']="Ensemble Gradient Boosting Classifier"												
+				if method_class_ensemble == 'RFC':
+					clf=ensemble.RandomForestClassifier()
+					context['algo_name']="Ensemble Random Forest Classifier"
+
+				Y_pred=cross_val_predict(clf, X, Y, cv=int(100-validation_split))
 			else:
-				Y_pred=cross_val_predict(clf, X, Y, cv=int(100-validation_split)) #clf_gini.predict(X_test)
+				method_class=form.cleaned_data['method_class']
+				if method_class == 'DT':
+					clf=DecisionTreeClassifier(criterion="gini", random_state=100, max_depth=32, min_samples_leaf=5)
+					context['algo_name']="Decision Tree"
+					params={'random_state':np.arange(1,100,5), 'max_depth': np.arange(1,31,2), 'min_samples_leaf': np.arange(1,10,2)}
+					#clf_gini.fit(X, Y)
+				if method_class == 'SVM':
+					clf=svm.LinearSVC()
+					context['algo_name']="Support Vector Machine"
+					params={'random_state':np.arange(1,100,5), 'C':np.arange(0.1, 1, 0.1)}
+				if method_class == 'NN':
+					clf=NN.MLPClassifier()	
+					context['algo_name']="Neural Networks (Multi-layer Perceptron)"
+					params={'random_state':np.arange(1,100,5), 'hidden_layer_sizes':np.arange(50,100,2), 'alpha':np.arange(0.1,1,0.1), 'max_iter':np.arange(90, 100, 1)}
+				if method_class == 'LR':
+					clf=LogisticRegression()
+					context['algo_name']="Logistic Regression"
+					params={'random_state':np.arange(1,100,5), 'C':np.arange(0.1, 1, 0.1), 'max_iter':np.arange(90, 100, 1)}
+				is_hyper=form.cleaned_data['is_hyper']
+				if is_hyper == 'Y':
+					grid_search=RandomizedSearchCV(clf, params)
+					#Y_pred=cross_val_predict(grid_search, X, Y, cv=int(100-validation_split))
+					grid_search.fit(X, Y)
+					Y_pred=grid_search.predict(X)
+					context['hyper_result']=pd.DataFrame(grid_search.cv_results_).to_html()
+				else:
+					Y_pred=cross_val_predict(clf, X, Y, cv=int(100-validation_split)) #clf_gini.predict(X_test)
 
 			X_test=data_file.loc[:, data_file.columns!=target]
 			Y_test=Y
@@ -228,28 +257,49 @@ def process(data_file, context, form, **kwargs):
 			return render_to_response("result_class.html",context)
 
 		if method_super == 'R':
-			method_reg=form.cleaned_data['method_reg']
-			if method_reg == 'LR':			
-				rgr=LinearRegression()
-				params={'n_jobs': np.arange(1,11,1)}
-			if method_reg == 'DT':	
-				rgr=DecisionTreeRegressor(criterion="mse", random_state=128, max_depth=32, min_samples_leaf=1)
-				params={'random_state':np.arange(1,100,5), 'max_depth': np.arange(1,31,2), 'min_samples_leaf': np.arange(1,10,2)}
-			if method_reg == 'BR':
-				rgr=BayesianRidge()
-				params={'lambda_1':np.arange(1,100,5), 'n_iter': np.arange(1,31,2), 'alpha_1': np.arange(1,10,2)}
-			if method_reg == 'SVR':
-				rgr=svm.SVR()
-				params={'max_iter':np.arange(1,100,5), 'C':np.arange(0.1, 1, 0.1)}
-			is_hyper=form.cleaned_data['is_hyper']
-			if is_hyper == 'Y':
-				grid_search=RandomizedSearchCV(rgr, params)
-				#Y_pred=cross_val_predict(grid_search, X, Y, cv=int(100-validation_split))
-				grid_search.fit(X, Y)
-				Y_pred=grid_search.predict(X)
-				context['hyper_result']=pd.DataFrame(grid_search.cv_results_).to_html()
+			is_ensemble=form.cleaned_data['is_reg_ensemble']
+			if is_ensemble == 'Y':
+				method_reg_ensemble=form.cleaned_data['method_reg_ensemble']
+				if method_reg_ensemble == 'AdaR':
+					rgr=ensemble.AdaBoostRegressor()
+					context['algo_name']="Ensemble Ada Boost Regressor"
+				if method_reg_ensemble == 'BR':
+					rgr=ensemble.BaggingRegressor()
+					context['algo_name']="Ensemble Bagging Regressor"
+				if method_reg_ensemble == 'ETR':
+					rgr=ensemble.ExtraTreesRegressor()
+					context['algo_name']="Ensemble Extra Trees Regressor"
+				if method_reg_ensemble == 'GBR':
+					rgr=ensemble.GradientBoostingRegressor()
+					context['algo_name']="Ensemble Gradient Boosting Regressor"												
+				if method_reg_ensemble == 'RFR':
+					rgr=ensemble.RandomForestRegressor()
+					context['algo_name']="Ensemble Random Forest Regressor"
+
+				Y_pred=cross_val_predict(rgr, X, Y, cv=int(100-validation_split))			
 			else:			
-				Y_pred=cross_val_predict(rgr, X, Y, cv=int(100-validation_split))
+				method_reg=form.cleaned_data['method_reg']
+				if method_reg == 'LR':			
+					rgr=LinearRegression()
+					params={'n_jobs': np.arange(1,11,1)}
+				if method_reg == 'DT':	
+					rgr=DecisionTreeRegressor(criterion="mse", random_state=128, max_depth=32, min_samples_leaf=1)
+					params={'random_state':np.arange(1,100,5), 'max_depth': np.arange(1,31,2), 'min_samples_leaf': np.arange(1,10,2)}
+				if method_reg == 'BR':
+					rgr=BayesianRidge()
+					params={'lambda_1':np.arange(1,100,5), 'n_iter': np.arange(1,31,2), 'alpha_1': np.arange(1,10,2)}
+				if method_reg == 'SVR':
+					rgr=svm.SVR()
+					params={'max_iter':np.arange(1,100,5), 'C':np.arange(0.1, 1, 0.1)}
+				is_hyper=form.cleaned_data['is_hyper']
+				if is_hyper == 'Y':
+					grid_search=RandomizedSearchCV(rgr, params)
+					#Y_pred=cross_val_predict(grid_search, X, Y, cv=int(100-validation_split))
+					grid_search.fit(X, Y)
+					Y_pred=grid_search.predict(X)
+					context['hyper_result']=pd.DataFrame(grid_search.cv_results_).to_html()
+				else:			
+					Y_pred=cross_val_predict(rgr, X, Y, cv=int(100-validation_split))
 			X_test=data_file.loc[:, data_file.columns!=target]
 			Y_test=Y
 			context['x_cols']=X_test.columns
@@ -392,7 +442,9 @@ class EditExperimentForm(forms.ModelForm):
 #			'inputfile': forms.FileInput,	
 			'algorithm_choice': forms.Select(attrs={'onchange':"showDiv(this);"}),
 			'method_super': forms.Select(attrs={'onchange':"showSuperDiv(this);"}),
-			'method_unsuper': forms.Select(attrs={'onchange':"showUnsuperDiv(this);"}),	
+			'method_unsuper': forms.Select(attrs={'onchange':"showUnsuperDiv(this);"}),
+			'is_class_ensemble': forms.Select(attrs={'onchange':"showEnsembleClassDiv(this);"}),
+			'is_reg_ensemble': forms.Select(attrs={'onchange':"showEnsembleRegDiv(this);"}),
 		}
 	
 	def clean(self):

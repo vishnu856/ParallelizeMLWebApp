@@ -43,6 +43,11 @@ function showSuperDiv(elem)
 		document.getElementById('hiddev_class').style.display="none";
 		document.getElementById('hiddev_reg').style.display="block";
 	}
+	else
+	{
+		document.getElementById('hiddev_class').style.display="none";
+		document.getElementById('hiddev_reg').style.display="none";
+	}		
 }
 
 function showUnsuperDiv(elem)
@@ -50,12 +55,50 @@ function showUnsuperDiv(elem)
 	if(elem.value=='C')
 	{
 		document.getElementById('hiddev_clust').style.display = "block";
-		document.getElementById('hiddev_features').style.display = "none";
 	}
-	else if(elem.value=='F')
+	else
 	{
 		document.getElementById('hiddev_clust').style.display = "none";
-		document.getElementById('hiddev_features').style.display = "block";
 	}
-	
+}
+
+function showEnsembleClassDiv(elem)
+{
+	if(elem.value=='Y')
+	{
+		document.getElementById('hiddev_class_ensemble_yes').style.display = "block";
+		document.getElementById('hiddev_class_ensemble_no').style.display = "none";
+	}
+	else if(elem.value=='N')
+	{
+		document.getElementById('hiddev_class_ensemble_yes').style.display = "none";
+		document.getElementById('hiddev_class_ensemble_no').style.display = "block";
+	}
+	else
+	{
+		document.getElementById('hiddev_class_ensemble_yes').style.display = "none";
+		document.getElementById('hiddev_class_ensemble_no').style.display = "none";
+	}
+		
+}
+
+function showEnsembleRegDiv(elem)
+{
+	if(elem.value=='Y')
+	{
+		alert("Asim rocks");
+		document.getElementById('hiddev_reg_ensemble_yes').style.display = "block";
+		document.getElementById('hiddev_reg_ensemble_no').style.display = "none";
+	}
+	else if(elem.value=='N')
+	{
+		document.getElementById('hiddev_reg_ensemble_yes').style.display = "none";
+		document.getElementById('hiddev_reg_ensemble_no').style.display = "block";
+	}
+	else
+	{
+		document.getElementById('hiddev_reg_ensemble_yes').style.display = "none";
+		document.getElementById('hiddev_reg_ensemble_no').style.display = "none";
+	}
+		
 }

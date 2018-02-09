@@ -2,7 +2,7 @@
 {% extends 'navbar.html' %}
 
 {% block content %}
-	<h4 class="center"> Results </h4>
+	<h4 class="center"> Results {% if algo_name %} for {{ algo_name }} {% endif %} </h4>
 	<div class="container">
 	<div class="responsive-table" style="overflow-x:scroll; height: 80%;">
 		<table class="highlight centered">
