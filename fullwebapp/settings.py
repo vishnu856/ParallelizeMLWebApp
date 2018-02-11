@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'readin',
     'formtools',
     'material',
+    'multiselectfield',
 ]
 
 MIDDLEWARE = [

@@ -86,7 +86,6 @@ function showEnsembleRegDiv(elem)
 {
 	if(elem.value=='Y')
 	{
-		alert("Asim rocks");
 		document.getElementById('hiddev_reg_ensemble_yes').style.display = "block";
 		document.getElementById('hiddev_reg_ensemble_no').style.display = "none";
 	}

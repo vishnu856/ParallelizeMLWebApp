@@ -74,9 +74,10 @@ class Post(models.Model):
 	method_reg_ensemble=models.CharField(max_length=128, choices=ALGO_REG_ENSEMBLE, blank=True)
 
 	method_class=models.CharField(max_length=128, choices=ALGO_CLASS_CHOICES, blank=True)	
-	method_reg=models.CharField(max_length=128, choices=ALGO_REG_CHOICES, blank=True)	
+	is_class_hyper=models.CharField(max_length=128, choices=CHOICE_HYPERPARAM_TUNING, blank=True)	
 
-	is_hyper=models.CharField(max_length=128, choices=CHOICE_HYPERPARAM_TUNING, blank=True)	
+	method_reg=models.CharField(max_length=128, choices=ALGO_REG_CHOICES, blank=True)	
+	is_reg_hyper=models.CharField(max_length=128, choices=CHOICE_HYPERPARAM_TUNING, blank=True)	
 	
 	target=models.CharField(max_length=500, blank=True, null=True)
 

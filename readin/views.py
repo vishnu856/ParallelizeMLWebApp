@@ -189,7 +189,7 @@ def process(data_file, context, form, **kwargs):
 					clf=LogisticRegression()
 					context['algo_name']="Logistic Regression"
 					params={'random_state':np.arange(1,100,5), 'C':np.arange(0.1, 1, 0.1), 'max_iter':np.arange(90, 100, 1)}
-				is_hyper=form.cleaned_data['is_hyper']
+				is_hyper=form.cleaned_data['is_class_hyper']
 				if is_hyper == 'Y':
 					grid_search=RandomizedSearchCV(clf, params)
 					#Y_pred=cross_val_predict(grid_search, X, Y, cv=int(100-validation_split))
@@ -291,7 +291,7 @@ def process(data_file, context, form, **kwargs):
 				if method_reg == 'SVR':
 					rgr=svm.SVR()
 					params={'max_iter':np.arange(1,100,5), 'C':np.arange(0.1, 1, 0.1)}
-				is_hyper=form.cleaned_data['is_hyper']
+				is_hyper=form.cleaned_data['is_reg_hyper']
 				if is_hyper == 'Y':
 					grid_search=RandomizedSearchCV(rgr, params)
 					#Y_pred=cross_val_predict(grid_search, X, Y, cv=int(100-validation_split))
