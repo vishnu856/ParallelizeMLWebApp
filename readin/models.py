@@ -24,6 +24,11 @@ class Post(models.Model):
 		('SVM','Support Vector Machine'),
 		('NN','Neural Network'),		
 		('LR','Logistic Regression'),
+		('AdaC', 'Ensembled Ada Boost Classifier'),
+		('BC', 'Ensembled Bagging Classifier'),
+		('ETC', 'Ensembled Extra Trees Classifier'),
+		('GBC', 'Ensembled Gradient Boosting Classifier'),
+		('RFC', 'Ensembled Random Forest Classifier'),
 	)
 	ALGO_UNSUPER_CHOICES=(
 		('C', 'Clustering'),
@@ -44,13 +49,6 @@ class Post(models.Model):
 		('Y', 'Yes'),
 		('N', 'No'),
 	)
-	ALGO_CLASS_ENSEMBLE=(
-		('AdaC', 'Ada Boost Classifier'),
-		('BC', 'Bagging Classifier'),
-		('ETC', 'Extra Trees Classifier'),
-		('GBC', 'Gradient Boosting Classifier'),
-		('RFC', 'Random Forest Classifier'),
-	)
 	ALGO_REG_ENSEMBLE=(
 		('AdaR','Ada Boost Regressor'),
 		('BR','Bagging Regressor'),
@@ -66,9 +64,6 @@ class Post(models.Model):
 	validation_split=models.DecimalField(max_digits=3, decimal_places=1, default=75)
 	method_super=models.CharField(max_length=128, choices=ALGO_SUPER_CHOICES, blank=True)	
 	no_labels=models.PositiveSmallIntegerField(default=2)
-
-	is_class_ensemble=models.CharField(max_length=128, choices=CHOICE_HYPERPARAM_TUNING, blank=True)
-	method_class_ensemble=models.CharField(max_length=128, choices=ALGO_CLASS_ENSEMBLE, blank=True)
 
 	is_reg_ensemble=models.CharField(max_length=128, choices=CHOICE_HYPERPARAM_TUNING, blank=True)
 	method_reg_ensemble=models.CharField(max_length=128, choices=ALGO_REG_ENSEMBLE, blank=True)

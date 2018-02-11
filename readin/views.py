@@ -138,25 +138,47 @@ def report2dict(cr):
 def mapping_class(s):
 	clf=None
 	context_str=""
+	context_img=""
 	params={}
 	if s == 'DT':
 		clf=DecisionTreeClassifier(criterion="gini", random_state=100, max_depth=32, min_samples_leaf=5)
 		context_str="Decision Tree"
+		context_img="https://images.cdn2.stockunlimited.net/preview1300/tree-design-on-circuit-board-background_1646948.jpg"
 		params={'random_state':np.arange(1,100,5), 'max_depth': np.arange(1,31,2), 'min_samples_leaf': np.arange(1,10,2)}
 		#clf_gini.fit(X, Y)
 	if s == 'SVM':
 		clf=svm.LinearSVC()
 		context_str="Support Vector Machine"
+		context_img="https://media.licdn.com/mpr/mpr/AAEAAQAAAAAAAAxDAAAAJDNlNjYwZjUxLTRjMzMtNDM4Ni05YjZiLTJlYmRhZGExNTg2MA.jpg"
+		#context_img="http://graphicalmemes.com/images/support_vector_machine.png"
 		params={'random_state':np.arange(1,100,5), 'C':np.arange(0.1, 1, 0.1)}
 	if s == 'NN':
 		clf=NN.MLPClassifier()	
 		context_str="Neural Networks (Multi-layer Perceptron)"
 		params={'random_state':np.arange(1,100,5), 'hidden_layer_sizes':np.arange(50,100,2), 'alpha':np.arange(0.1,1,0.1), 'max_iter':np.arange(90, 100, 1)}
+		context_img="https://www.onlinebooksreview.com/uploads/blog_images/2017/09/25_neuralnet.jpg"
 	if s == 'LR':
 		clf=LogisticRegression()
 		context_str="Logistic Regression"
+		context_img="https://blog.knowledgent.com/wp-content/uploads/2015/12/Logistic_Regression.jpg"
 		params={'random_state':np.arange(1,100,5), 'C':np.arange(0.1, 1, 0.1), 'max_iter':np.arange(90, 100, 1)}
-	return clf, context_str, params
+	if s == 'AdaC':
+		clf=ensemble.AdaBoostClassifier()
+		context_str="Ensemble Ada Boost Classifier"
+	if s == 'BC':
+		clf=ensemble.BaggingClassifier()
+		context_str="Ensemble Bagging Classifier"
+	if s == 'ETC':
+		clf=ensemble.ExtraTreesClassifier()
+		context_str="Ensemble Extra Trees Classifier"
+	if s == 'GBC':
+		clf=ensemble.GradientBoostingClassifier()
+		context_str="Ensemble Gradient Boosting Classifier"												
+	if s == 'RFC':
+		clf=ensemble.RandomForestClassifier()
+		context_str="Ensemble Random Forest Classifier"
+
+	return clf, context_str, params, context_img
 
 def one_model_class_render(form, data_file, Y, context, Y_pred, target):
 	X_test=data_file.loc[:, data_file.columns!=target]
@@ -348,62 +370,41 @@ def process(data_file, context, form, **kwargs):
 		#X_train, X_test, Y_train, Y_test=train_test_split(X,Y,test_size=1-(float(validation_split)/100), random_state=100)
 		method_super=form.cleaned_data['method_super']
 		if method_super == 'C':
-			is_ensemble=form.cleaned_data['is_class_ensemble']
-			if is_ensemble == 'Y':
-				method_class_ensemble=form.cleaned_data['method_class_ensemble']
-				if method_class_ensemble == 'AdaC':
-					clf=ensemble.AdaBoostClassifier()
-					context['algo_name']="Ensemble Ada Boost Classifier"
-				if method_class_ensemble == 'BC':
-					clf=ensemble.BaggingClassifier()
-					context['algo_name']="Ensemble Bagging Classifier"
-				if method_class_ensemble == 'ETC':
-					clf=ensemble.ExtraTreesClassifier()
-					context['algo_name']="Ensemble Extra Trees Classifier"
-				if method_class_ensemble == 'GBC':
-					clf=ensemble.GradientBoostingClassifier()
-					context['algo_name']="Ensemble Gradient Boosting Classifier"												
-				if method_class_ensemble == 'RFC':
-					clf=ensemble.RandomForestClassifier()
-					context['algo_name']="Ensemble Random Forest Classifier"
-
-				Y_pred=cross_val_predict(clf, X, Y, cv=int(100-validation_split))
-			else:
-				method_class=form.cleaned_data['method_class']
-				if len(method_class)==1:
-					clf, context['algo_name'], params=mapping_class(method_class[0])
-					is_hyper=form.cleaned_data['is_class_hyper']
-					if is_hyper == 'Y':
-						grid_search=RandomizedSearchCV(clf, params)
-						#Y_pred=cross_val_predict(grid_search, X, Y, cv=int(100-validation_split))
-						grid_search.fit(X, Y)
-						Y_pred=grid_search.predict(X)
-						context['hyper_result']=pd.DataFrame(grid_search.cv_results_).to_html()
-					else:
-						Y_pred=cross_val_predict(clf, X, Y, cv=int(100-validation_split)) #clf_gini.predict(X_test)
-					return one_model_class_render(form, data_file, Y, context, Y_pred, target)
-				if len(method_class)==2:
-					clf_1, context['algo_name_1'], params=mapping_class(method_class[0])
-					is_hyper=form.cleaned_data['is_class_hyper']
-					if is_hyper == 'Y':
-						grid_search=RandomizedSearchCV(clf_1, params)
-						#Y_pred=cross_val_predict(grid_search, X, Y, cv=int(100-validation_split))
-						grid_search.fit(X, Y)
-						Y_pred_1=grid_search.predict(X)
-						context['hyper_result_1']=pd.DataFrame(grid_search.cv_results_).to_html()
-					else:
-						Y_pred_1=cross_val_predict(clf_1, X, Y, cv=int(100-validation_split))
-					clf_2, context['algo_name_2'], params=mapping_class(method_class[1])
-					is_hyper=form.cleaned_data['is_class_hyper']
-					if is_hyper == 'Y':
-						grid_search=RandomizedSearchCV(clf_2, params)
-						#Y_pred=cross_val_predict(grid_search, X, Y, cv=int(100-validation_split))
-						grid_search.fit(X, Y)
-						Y_pred_2=grid_search.predict(X)
-						context['hyper_result_2']=pd.DataFrame(grid_search.cv_results_).to_html()
-					else:
-						Y_pred_2=cross_val_predict(clf_2, X, Y, cv=int(100-validation_split))
-					return two_model_class_render(form, data_file, Y, context, Y_pred_1, Y_pred_2, target)
+			method_class=form.cleaned_data['method_class']
+			if len(method_class)==1:
+				clf, context['algo_name'], params, context['img_url']=mapping_class(method_class[0])
+				is_hyper=form.cleaned_data['is_class_hyper']
+				if is_hyper == 'Y':
+					grid_search=RandomizedSearchCV(clf, params)
+					#Y_pred=cross_val_predict(grid_search, X, Y, cv=int(100-validation_split))
+					grid_search.fit(X, Y)
+					Y_pred=grid_search.predict(X)
+					context['hyper_result']=pd.DataFrame(grid_search.cv_results_).to_html()
+				else:
+					Y_pred=cross_val_predict(clf, X, Y, cv=int(100-validation_split)) #clf_gini.predict(X_test)
+				return one_model_class_render(form, data_file, Y, context, Y_pred, target)
+			if len(method_class)==2:
+				clf_1, context['algo_name_1'], params, context['img_url_1']=mapping_class(method_class[0])
+				is_hyper=form.cleaned_data['is_class_hyper']
+				if is_hyper == 'Y':
+					grid_search=RandomizedSearchCV(clf_1, params)
+					#Y_pred=cross_val_predict(grid_search, X, Y, cv=int(100-validation_split))
+					grid_search.fit(X, Y)
+					Y_pred_1=grid_search.predict(X)
+					context['hyper_result_1']=pd.DataFrame(grid_search.cv_results_).to_html()
+				else:
+					Y_pred_1=cross_val_predict(clf_1, X, Y, cv=int(100-validation_split))
+				clf_2, context['algo_name_2'], params, context['img_url_2']=mapping_class(method_class[1])
+				is_hyper=form.cleaned_data['is_class_hyper']
+				if is_hyper == 'Y':
+					grid_search=RandomizedSearchCV(clf_2, params)
+					#Y_pred=cross_val_predict(grid_search, X, Y, cv=int(100-validation_split))
+					grid_search.fit(X, Y)
+					Y_pred_2=grid_search.predict(X)
+					context['hyper_result_2']=pd.DataFrame(grid_search.cv_results_).to_html()
+				else:
+					Y_pred_2=cross_val_predict(clf_2, X, Y, cv=int(100-validation_split))
+				return two_model_class_render(form, data_file, Y, context, Y_pred_1, Y_pred_2, target)
 
 
 		if method_super == 'R':
