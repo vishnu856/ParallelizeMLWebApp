@@ -3,7 +3,7 @@ from os.path import basename
 from django.urls import reverse
 from django import forms
 import pandas as pd
-
+from multiselectfield import MultiSelectField
 # Create your models here.
 
 def user_directory_path(instance, filename):
@@ -73,7 +73,7 @@ class Post(models.Model):
 	is_reg_ensemble=models.CharField(max_length=128, choices=CHOICE_HYPERPARAM_TUNING, blank=True)
 	method_reg_ensemble=models.CharField(max_length=128, choices=ALGO_REG_ENSEMBLE, blank=True)
 
-	method_class=models.CharField(max_length=128, choices=ALGO_CLASS_CHOICES, blank=True)	
+	method_class=MultiSelectField(choices=ALGO_CLASS_CHOICES)#models.CharField(max_length=128, choices=ALGO_CLASS_CHOICES, blank=True)	
 	is_class_hyper=models.CharField(max_length=128, choices=CHOICE_HYPERPARAM_TUNING, blank=True)	
 
 	method_reg=models.CharField(max_length=128, choices=ALGO_REG_CHOICES, blank=True)	

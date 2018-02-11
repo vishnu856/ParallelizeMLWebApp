@@ -78,11 +78,12 @@
 					</div>
 					<div id="hiddev_class_ensemble_no" style="display: none;">
 						<div class="row">
-						<div class="input-field col s12">
-							{{ form.method_class.errors }}
-							{{ form.method_class }}				
-							<label for="id_method_class">Choose Classification Algorithm</label>		
-						</div>		
+					{% for value, text in form.method_class.field.choices %}
+					  <div class="checkbox">
+					    <input id="id_method_class_{{ forloop.counter0 }}" name="{{ form.method_class.name }}" type="checkbox" value="{{ value }}"{% if value in checked_method_class %} checked="checked"{% endif %}>
+					    <label for="id_method_class_{{ forloop.counter0 }}">{{ text }}</label>
+					  </div>
+					{% endfor %}
 						</div>	
 						<div class="row">
 						<div class="input-field col s12">
