@@ -51,10 +51,8 @@ class NewExperimentForm(forms.ModelForm):
 			'algorithm_choice': forms.Select(attrs={'onchange':"showDiv(this);"}),
 			'method_super': forms.Select(attrs={'onchange':"showSuperDiv(this);"}),
 			'method_unsuper': forms.Select(attrs={'onchange':"showUnsuperDiv(this);"}),
-			'is_class_ensemble': forms.Select(attrs={'onchange':"showEnsembleClassDiv(this);"}),
 			'is_reg_ensemble': forms.Select(attrs={'onchange':"showEnsembleRegDiv(this);"}),
 		}
-
 	def clean(self):
 		cleaned_data=super(NewExperimentForm, self).clean()
 		algorithm_choice=cleaned_data.get("algorithm_choice")
@@ -72,18 +70,21 @@ class NewExperimentForm(forms.ModelForm):
 		#	raise ValidationError(('CSV file read as empty!'))	
 		if algorithm_choice:
 			if algorithm_choice == 'S':
+				print(method_super)
 				if method_super is None or target is None:
 					raise ValidationError(('Need to fill in all options for Supervised learning.'))
-				method_cl=cleaned_data.get("method_class")
-				if method_cl is None:
-					raise ValidationError(('Need to select atleast 1 model'))
-				if len(method_cl) > 2:
-					raise ValidationError(('Can\'t select more than 2 models.'))
-				if method_super=='C' and method_cl is None:
-					raise ValidationError(('Need to fill in all options for Classification.'))	
-				method_re=cleaned_data.get("method_reg")
-				if method_super=='R' and method_re is None:
-					raise ValidationError(('Need to fill in all options for Regression.'))					
+				if method_super == 'C':
+					method_cl=cleaned_data.get("method_class")
+					if method_cl is None:
+						raise ValidationError(('Need to select atleast 1 model'))
+					if len(method_cl) > 2:
+						raise ValidationError(('Can\'t select more than 2 models.'))
+				if method_super == 'R':
+					method_re=cleaned_data.get("method_reg")
+					if method_re is None:
+						raise ValidationError(('Need to select atleast 1 model'))
+					if len(method_re) > 2:
+						raise ValidationError(('Can\'t select more than 2 models.'))				
 				#if target not in data_file:
 				#	raise ValidationError(('Specify a valid target present in the CSV!'+str(target)+' '+str(data_file.columns)))
 			if algorithm_choice == 'U':
@@ -93,7 +94,7 @@ class NewExperimentForm(forms.ModelForm):
 				if method_unsuper == 'C' and method_clust is None:
 					raise ValidationError(('Need to fill in all options for Clustering.'))
 		else:
-			raise ValidationError(('Need to select method of learning.'))						
+			raise ValidationError(('Need to select method of learning.'))					
 		return cleaned_data
 
 def encode_target(df, target_column):
@@ -351,10 +352,119 @@ def two_model_class_render(form, data_file, Y, context, Y_pred_1, Y_pred_2, targ
 	context['zip_json_2']=json.dumps(list(zip(all_fpr, mean_tpr)))
 	return render_to_response("result_class_comp.html", context)
 
+def mapping_reg(s):
+	rgr=None
+	context_str=""
+	context_img=""
+	params={}
+	if s == 'LR':			
+		rgr=LinearRegression()
+		context_str="Linear Regressor"
+		params={'n_jobs': np.arange(1,11,1)}
+	if s == 'DT':	
+		rgr=DecisionTreeRegressor(criterion="mse", random_state=128, max_depth=32, min_samples_leaf=1)
+		context_str="Decision Tree Regressor"
+		params={'random_state':np.arange(1,100,5), 'max_depth': np.arange(1,31,2), 'min_samples_leaf': np.arange(1,10,2)}
+	if s == 'BayR':
+		rgr=BayesianRidge()
+		context_str="Bayesian Ridge Regressor"
+		params={'lambda_1':np.arange(1,100,5), 'n_iter': np.arange(1,31,2), 'alpha_1': np.arange(1,10,2)}
+	if s == 'SVR':
+		rgr=svm.SVR()
+		context_str="Support Vector Regressor"
+		params={'max_iter':np.arange(1,100,5), 'C':np.arange(0.1, 1, 0.1)}	
+	if s == 'AdaR':
+		rgr=ensemble.AdaBoostRegressor()
+		context_str="Ensemble Ada Boost Regressor"
+	if s == 'BagR':
+		rgr=ensemble.BaggingRegressor()
+		context_str="Ensemble Bagging Regressor"
+	if s == 'ETR':
+		rgr=ensemble.ExtraTreesRegressor()
+		context_str="Ensemble Extra Trees Regressor"
+	if s == 'GBR':
+		rgr=ensemble.GradientBoostingRegressor()
+		context_str="Ensemble Gradient Boosting Regressor"												
+	if s == 'RFR':
+		rgr=ensemble.RandomForestRegressor()
+		context_str="Ensemble Random Forest Regressor"
+	return rgr, context_str, params, context_img
+
+def one_model_reg_render(form, data_file, Y, context, Y_pred, target):
+	X_test=data_file.loc[:, data_file.columns!=target]
+	Y_test=Y
+	context['x_cols']=X_test.columns
+	context['tot_cols']=range(len(X_test.columns)+2)
+	context['y_pred']=Y_pred 
+	context['y_test']=Y_test 
+	zip_val=list(zip(Y_test, Y_pred))
+	Y_pred=np.matrix(Y_pred).T
+	Y_test=np.matrix(Y_test).T
+	val_set=np.concatenate([X_test, Y_test], axis=1)
+	test_zip=np.concatenate([val_set, Y_pred],axis=1)
+	context['full_set']=np.array(test_zip)
+	context['explained_variance_score']=met.explained_variance_score(Y_test, Y_pred)
+	context['mean_absolute_error']=met.mean_absolute_error(Y_test, Y_pred)
+	context['mean_squared_error']=met.mean_squared_error(Y_test, Y_pred)
+	context['mean_squared_log_error']=met.mean_squared_log_error(Y_test, Y_pred)
+	context['median_absolute_error']=met.median_absolute_error(Y_test, Y_pred)
+	context['r2_score']=met.r2_score(Y_test, Y_pred)
+#			print(zip_val)
+	context['zip_json']=json.dumps(zip_val)
+	context['form']=form
+	# here you can add things like:
+	return render_to_response("result_reg.html",context)
+
+def two_model_reg_render(form, data_file, Y, context, Y_pred_1, Y_pred_2, target):
+	X_test=data_file.loc[:, data_file.columns!=target]
+	Y_test=Y
+	context['x_cols_1']=X_test.columns
+	context['tot_cols_1']=range(len(X_test.columns)+2)
+	context['y_pred_1']=Y_pred_1 
+	context['y_test_1']=Y_test 
+	zip_val=list(zip(Y_test, Y_pred_1))
+	Y_pred_1=np.matrix(Y_pred_1).T
+	Y_test=np.matrix(Y_test).T
+	val_set=np.concatenate([X_test, Y_test], axis=1)
+	test_zip=np.concatenate([val_set, Y_pred_1],axis=1)
+	context['full_set_1']=np.array(test_zip)
+	context['explained_variance_score_1']=met.explained_variance_score(Y_test, Y_pred_1)
+	context['mean_absolute_error_1']=met.mean_absolute_error(Y_test, Y_pred_1)
+	context['mean_squared_error_1']=met.mean_squared_error(Y_test, Y_pred_1)
+	context['mean_squared_log_error_1']=met.mean_squared_log_error(Y_test, Y_pred_1)
+	context['median_absolute_error_1']=met.median_absolute_error(Y_test, Y_pred_1)
+	context['r2_score_1']=met.r2_score(Y_test, Y_pred_1)
+	context['zip_json_1']=json.dumps(zip_val)
+
+	X_test=data_file.loc[:, data_file.columns!=target]
+	Y_test=Y
+	context['x_cols_2']=X_test.columns
+	context['tot_cols_2']=range(len(X_test.columns)+2)
+	context['y_pred_2']=Y_pred_2
+	context['y_test_2']=Y_test 
+	zip_val=list(zip(Y_test, Y_pred_2))
+	Y_pred_2=np.matrix(Y_pred_2).T
+	Y_test=np.matrix(Y_test).T
+	val_set=np.concatenate([X_test, Y_test], axis=1)
+	test_zip=np.concatenate([val_set, Y_pred_2],axis=1)
+	context['full_set_2']=np.array(test_zip)
+	context['explained_variance_score_2']=met.explained_variance_score(Y_test, Y_pred_2)
+	context['mean_absolute_error_2']=met.mean_absolute_error(Y_test, Y_pred_2)
+	context['mean_squared_error_2']=met.mean_squared_error(Y_test, Y_pred_2)
+	context['mean_squared_log_error_2']=met.mean_squared_log_error(Y_test, Y_pred_2)
+	context['median_absolute_error_2']=met.median_absolute_error(Y_test, Y_pred_2)
+	context['r2_score_2']=met.r2_score(Y_test, Y_pred_2)
+#			print(zip_val)
+	context['zip_json_2']=json.dumps(zip_val)
+
+	context['form']=form
+	# here you can add things like:
+	return render_to_response("result_reg_comp.html",context)
+
 def process(data_file, context, form, **kwargs):
 
 	X=data_file.fillna(0)
-
+	print("In process")
 	algorithm_choice=form.cleaned_data['algorithm_choice']
 	if algorithm_choice == 'S':
 		target=form.cleaned_data['target']
@@ -384,20 +494,20 @@ def process(data_file, context, form, **kwargs):
 					Y_pred=cross_val_predict(clf, X, Y, cv=int(100-validation_split)) #clf_gini.predict(X_test)
 				return one_model_class_render(form, data_file, Y, context, Y_pred, target)
 			if len(method_class)==2:
-				clf_1, context['algo_name_1'], params, context['img_url_1']=mapping_class(method_class[0])
+				clf_1, context['algo_name_1'], params_1, context['img_url_1']=mapping_class(method_class[0])
 				is_hyper=form.cleaned_data['is_class_hyper']
 				if is_hyper == 'Y':
-					grid_search=RandomizedSearchCV(clf_1, params)
+					grid_search=RandomizedSearchCV(clf_1, params_1)
 					#Y_pred=cross_val_predict(grid_search, X, Y, cv=int(100-validation_split))
 					grid_search.fit(X, Y)
 					Y_pred_1=grid_search.predict(X)
 					context['hyper_result_1']=pd.DataFrame(grid_search.cv_results_).to_html()
 				else:
 					Y_pred_1=cross_val_predict(clf_1, X, Y, cv=int(100-validation_split))
-				clf_2, context['algo_name_2'], params, context['img_url_2']=mapping_class(method_class[1])
+				clf_2, context['algo_name_2'], params_2, context['img_url_2']=mapping_class(method_class[1])
 				is_hyper=form.cleaned_data['is_class_hyper']
 				if is_hyper == 'Y':
-					grid_search=RandomizedSearchCV(clf_2, params)
+					grid_search=RandomizedSearchCV(clf_2, params_2)
 					#Y_pred=cross_val_predict(grid_search, X, Y, cv=int(100-validation_split))
 					grid_search.fit(X, Y)
 					Y_pred_2=grid_search.predict(X)
@@ -408,40 +518,11 @@ def process(data_file, context, form, **kwargs):
 
 
 		if method_super == 'R':
-			is_ensemble=form.cleaned_data['is_reg_ensemble']
-			if is_ensemble == 'Y':
-				method_reg_ensemble=form.cleaned_data['method_reg_ensemble']
-				if method_reg_ensemble == 'AdaR':
-					rgr=ensemble.AdaBoostRegressor()
-					context['algo_name']="Ensemble Ada Boost Regressor"
-				if method_reg_ensemble == 'BR':
-					rgr=ensemble.BaggingRegressor()
-					context['algo_name']="Ensemble Bagging Regressor"
-				if method_reg_ensemble == 'ETR':
-					rgr=ensemble.ExtraTreesRegressor()
-					context['algo_name']="Ensemble Extra Trees Regressor"
-				if method_reg_ensemble == 'GBR':
-					rgr=ensemble.GradientBoostingRegressor()
-					context['algo_name']="Ensemble Gradient Boosting Regressor"												
-				if method_reg_ensemble == 'RFR':
-					rgr=ensemble.RandomForestRegressor()
-					context['algo_name']="Ensemble Random Forest Regressor"
-
-				Y_pred=cross_val_predict(rgr, X, Y, cv=int(100-validation_split))			
-			else:			
-				method_reg=form.cleaned_data['method_reg']
-				if method_reg == 'LR':			
-					rgr=LinearRegression()
-					params={'n_jobs': np.arange(1,11,1)}
-				if method_reg == 'DT':	
-					rgr=DecisionTreeRegressor(criterion="mse", random_state=128, max_depth=32, min_samples_leaf=1)
-					params={'random_state':np.arange(1,100,5), 'max_depth': np.arange(1,31,2), 'min_samples_leaf': np.arange(1,10,2)}
-				if method_reg == 'BR':
-					rgr=BayesianRidge()
-					params={'lambda_1':np.arange(1,100,5), 'n_iter': np.arange(1,31,2), 'alpha_1': np.arange(1,10,2)}
-				if method_reg == 'SVR':
-					rgr=svm.SVR()
-					params={'max_iter':np.arange(1,100,5), 'C':np.arange(0.1, 1, 0.1)}
+			method_reg=form.cleaned_data['method_reg']
+			if len(method_reg) == 1:
+				rgr, context['algo_name'], params, context['img_url']=mapping_reg(method_reg[0])
+				print(method_reg)				
+				print(rgr)
 				is_hyper=form.cleaned_data['is_reg_hyper']
 				if is_hyper == 'Y':
 					grid_search=RandomizedSearchCV(rgr, params)
@@ -451,29 +532,29 @@ def process(data_file, context, form, **kwargs):
 					context['hyper_result']=pd.DataFrame(grid_search.cv_results_).to_html()
 				else:			
 					Y_pred=cross_val_predict(rgr, X, Y, cv=int(100-validation_split))
-			X_test=data_file.loc[:, data_file.columns!=target]
-			Y_test=Y
-			context['x_cols']=X_test.columns
-			context['tot_cols']=range(len(X_test.columns)+2)
-			context['y_pred']=Y_pred 
-			context['y_test']=Y_test 
-			zip_val=list(zip(Y_test, Y_pred))
-			Y_pred=np.matrix(Y_pred).T
-			Y_test=np.matrix(Y_test).T
-			val_set=np.concatenate([X_test, Y_test], axis=1)
-			test_zip=np.concatenate([val_set, Y_pred],axis=1)
-			context['full_set']=np.array(test_zip)
-			context['explained_variance_score']=met.explained_variance_score(Y_test, Y_pred)
-			context['mean_absolute_error']=met.mean_absolute_error(Y_test, Y_pred)
-			context['mean_squared_error']=met.mean_squared_error(Y_test, Y_pred)
-			context['mean_squared_log_error']=met.mean_squared_log_error(Y_test, Y_pred)
-			context['median_absolute_error']=met.median_absolute_error(Y_test, Y_pred)
-			context['r2_score']=met.r2_score(Y_test, Y_pred)
-#			print(zip_val)
-			context['zip_json']=json.dumps(zip_val)
-			context['form']=form
-			# here you can add things like:
-			return render_to_response("result_reg.html",context)
+				return one_model_reg_render(form, data_file, Y, context, Y_pred, target)
+			if len(method_reg) == 2:
+				rgr_1, context['algo_name_1'], params_1, context['img_url_1']=mapping_reg(method_reg[0])
+				is_hyper=form.cleaned_data['is_reg_hyper']
+				if is_hyper == 'Y':
+					grid_search=RandomizedSearchCV(rgr_1, params_1)
+					grid_search.fit(X, Y)
+					Y_pred_1=grid_search.predict(X)
+					context['hyper_result_1']=pd.DataFrame(grid_search.cv_results_).to_html()
+				else:			
+					Y_pred_1=cross_val_predict(rgr_1, X, Y, cv=int(100-validation_split))
+				rgr_2, context['algo_name_2'], params_2, context['img_url']=mapping_reg(method_reg[1])
+				is_hyper=form.cleaned_data['is_reg_hyper']
+				if is_hyper == 'Y':
+					grid_search=RandomizedSearchCV(rgr_2, params_2)
+					#Y_pred=cross_val_predict(grid_search, X, Y, cv=int(100-validation_split))
+					grid_search.fit(X, Y)
+					Y_pred_2=grid_search.predict(X)
+					context['hyper_result_2']=pd.DataFrame(grid_search.cv_results_).to_html()
+				else:			
+					Y_pred_2=cross_val_predict(rgr_2, X, Y, cv=int(100-validation_split))
+				return two_model_reg_render(form, data_file, Y, context, Y_pred_1, Y_pred_2, target)
+
 	if algorithm_choice == 'U':
 		method_unsuper=form.cleaned_data['method_unsuper']
 		for i in X.columns:
@@ -562,6 +643,7 @@ class NewExperiment(CreateView):
 		return self.render_to_response(context)
 
 	def form_valid(self, form, **kwargs):
+		
 		context = self.get_context_data(**kwargs)
 		inputfile=form.cleaned_data['inputfile']
 		data_file=pd.DataFrame(pd.read_csv(inputfile, sep=',', keep_default_na=False))
@@ -573,10 +655,13 @@ class NewExperiment(CreateView):
 		self.object=None
 		form_class = self.get_form_class()
 		form = self.get_form(form_class)
+		print('Form post')
 		if form.is_valid():
+			print('Form valid')
 			return self.form_valid(form, **kwargs)
 		else:
-		    return self.form_invalid(form, **kwargs)			
+			print('Form invalid')
+			return self.form_invalid(form, **kwargs)			
 
 class NewExperimentPreview(FormPreview):
 	form_template="post_new.html"
@@ -617,16 +702,12 @@ class EditExperimentForm(forms.ModelForm):
 			if algorithm_choice == 'S':
 				if method_super is None or target is None:
 					raise ValidationError(('Need to fill in all options for Supervised learning.'))
-				method_cl=cleaned_data.get("method_class")
-				if method_cl is None:
-					raise ValidationError(('Need to select atleast 1 model'))
-				if len(method_cl) > 2:
-					raise ValidationError(('Can\'t select more than 2 models.'))
-				if method_super=='C' and method_cl is None:
-					raise ValidationError(('Need to fill in all options for Classification.'))	
-				method_re=cleaned_data.get("method_reg")
-				if method_super=='R' and method_re is None:
-					raise ValidationError(('Need to fill in all options for Regression.'))					
+				if method_super == 'C':
+					method_cl=cleaned_data.get("method_class")
+					if method_cl is None:
+						raise ValidationError(('Need to select atleast 1 model'))
+					if len(method_cl) > 2:
+						raise ValidationError(('Can\'t select more than 2 models.'))				
 				#if target not in data_file:
 				#	raise ValidationError(('Specify a valid target present in the CSV!'+str(target)+' '+str(data_file.columns)))
 			if algorithm_choice == 'U':

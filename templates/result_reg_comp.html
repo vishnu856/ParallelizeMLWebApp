@@ -1,0 +1,205 @@
+
+{% extends 'navbar.html' %}
+
+{% block content %}
+<div class="row">
+<div class="card left col s6" style="height: 800px">
+	<div class="card-image">
+		<img class="activator" src="{{ img_url_1|safe }}">
+		<span class="card-title activator white-text">Click to reveal results of {{ algo_name_1 }}<i class="material-icons right">poll</i></span>
+	</div>
+	<div class="card-reveal" style="height: 100%">
+		<h4 class="center"> Results {% if algo_name_1 %} for {{ algo_name_1 }} {% endif %} </h4>
+		<div class="card-tabs"> 
+			<ul class="tabs tabs-fixed-width">
+				<li class="tab"><a href="#result_table_1">Predictions</a></li>
+				<li class="tab"><a href="#reg_report_1">Reports</a></li>
+				<li class="tab"><a href="#scatterchart_material_1">Graphs</a></li>
+		      </ul>
+		</div>
+		<div id="result_table_1" class="responsive-table" style="overflow-x:scroll; height: 80%;">
+			<table class="highlight centered">
+				<thead>
+					<tr>		
+						{% for col in x_cols_1 %}
+							<th> {{ col }} </th>					
+						{% endfor %}		
+						<th> Test values: </th>
+						<th> Prediction: </th>  
+					</tr>
+				</thead>
+				{% for y1 in full_set_1 %}
+				<tbody>		
+					{% for ele in y1 %}		
+						<td> {{ ele }} </td>
+					{% endfor %}
+				</tbody>
+				{% endfor %}
+			</table>
+		</div>
+		<div id="reg_report_1">
+			{% if hyper_result_1 %}
+			<h5 class="center"> Hyperparameter Tuning Report </h5>
+			<div class="responsive-table" style="overflow-x:scroll; height: 80%;">	
+				{{ hyper_result_1|safe }}
+			</div>
+			{% endif %}	
+			<div class="responsive-table" style="overflow-x:scroll;">
+				<h5 class="center"> Result metric values for the regressor </h5>		
+				<table class="highlight centered">
+					<thead>
+						<tr> 
+							<th> Explained Variance Score </th>
+							<th> Mean Absolute Error </th>
+							<th> Mean Squared Error </th>
+							<th> Mean Squared Log Error </th>
+							<th> Median Absolute Error </th>
+							<th> r2 Score </th>
+						</tr>
+					</thead>
+					<tbody>
+						<td> {{ explained_variance_score_1 }} </td>
+						<td> {{ mean_absolute_error_1 }} </td>
+						<td> {{ mean_squared_error_1 }} </td>
+						<td> {{ mean_squared_log_error_1 }} </td>
+						<td> {{ median_absolute_error_1 }} </td>
+						<td> {{ r2_score_1 }} </td>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div id="scatterchart_material_1" class="center" style="display:block;">
+		</div>
+	</div>
+</div>
+<div class="card right col s6" style="height: 800px">
+	<div class="card-image">
+		<img class="activator" src="{{ img_url_2|safe }}">
+		<span class="card-title activator white-text">Click to reveal results of {{ algo_name_2 }}<i class="material-icons right">poll</i></span>
+	</div>
+	<div class="card-reveal">
+		<h4 class="center"> Results {% if algo_name_2 %} for {{ algo_name_2 }} {% endif %} </h4>
+		<div class="card-tabs"> 
+				<ul class="tabs tabs-fixed-width">
+					<li class="tab"><a href="#result_table_2">Predictions</a></li>
+					<li class="tab"><a href="#reg_report_2">Reports</a></li>
+					<li class="tab"><a href="#scatterchart_material_2">Graphs</a></li>
+			      </ul>
+		</div>
+		<div id="result_table_2" class="responsive-table" style="overflow-x:scroll; height: 80%;">
+			<table class="highlight centered">
+				<thead>
+					<tr>		
+						{% for col in x_cols_2 %}
+							<th> {{ col }} </th>					
+						{% endfor %}		
+						<th> Test values: </th>
+						<th> Prediction: </th>  
+					</tr>
+				</thead>
+				{% for y1 in full_set_2 %}
+				<tbody>		
+					{% for ele in y1 %}		
+						<td> {{ ele }} </td>
+					{% endfor %}
+				</tbody>
+				{% endfor %}
+			</table>
+		</div>
+		<div id="reg_report_2">
+			{% if hyper_result_2 %}
+			<h5 class="center"> Hyperparameter Tuning Report </h5>
+			<div class="responsive-table" style="overflow-x:scroll; height: 80%;">	
+				{{ hyper_result_2|safe }}
+			</div>
+			{% endif %}	
+			<div class="responsive-table" style="overflow-x:scroll;">
+				<h5 class="center"> Result metric values for the regressor </h5>		
+				<table class="highlight centered">
+					<thead>
+						<tr> 
+							<th> Explained Variance Score </th>
+							<th> Mean Absolute Error </th>
+							<th> Mean Squared Error </th>
+							<th> Mean Squared Log Error </th>
+							<th> Median Absolute Error </th>
+							<th> r2 Score </th>
+						</tr>
+					</thead>
+					<tbody>
+						<td> {{ explained_variance_score_2 }} </td>
+						<td> {{ mean_absolute_error_2 }} </td>
+						<td> {{ mean_squared_error_2 }} </td>
+						<td> {{ mean_squared_log_error_2 }} </td>
+						<td> {{ median_absolute_error_2 }} </td>
+						<td> {{ r2_score_2 }} </td>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div id="scatterchart_material_2" class="center" style="display:block;">
+		</div>
+	</div>
+</div>
+	<script type="text/javascript">
+		 google.charts.load('current', {
+		   'packages': ['corechart']
+		 });
+		 google.charts.setOnLoadCallback(drawChart1);
+		google.charts.setOnLoadCallback(drawChart2);
+		function drawChart1 () {
+
+        var data = new google.visualization.DataTable();
+        data.addColumn('number');
+        data.addColumn('number');
+
+        data.addRows({{ zip_json_1|safe }});
+
+        var options = {
+          width: 800,
+          height: 500,
+          chart: {
+            title: 'Predictions versus Test values',
+            subtitle: 'On a supervised regression algorithm',
+          },
+          hAxis: {title: 'Test values'},
+          vAxis: {title: 'Predicted values'},
+	 trendlines: { 0: {
+		type:'linear',
+		color: 'red'} },
+	legend:'none',
+        };
+
+        var chart = new google.visualization.ScatterChart(document.getElementById('scatterchart_material_1'));
+
+        chart.draw(data, options);// google.charts.Scatter.convertOptions(options));
+      }		
+	function drawChart2 () {
+
+        var data = new google.visualization.DataTable();
+        data.addColumn('number');
+        data.addColumn('number');
+
+        data.addRows({{ zip_json_2|safe }});
+
+        var options = {
+          width: 800,
+          height: 500,
+          chart: {
+            title: 'Predictions versus Test values',
+            subtitle: 'On a supervised regression algorithm',
+          },
+          hAxis: {title: 'Test values'},
+          vAxis: {title: 'Predicted values'},
+	 trendlines: { 0: {
+		type:'linear',
+		color: 'red'} },
+	legend:'none',
+        };
+
+        var chart = new google.visualization.ScatterChart(document.getElementById('scatterchart_material_2'));
+
+        chart.draw(data, options);// google.charts.Scatter.convertOptions(options));
+      }		
+	</script>
+{% endblock %}

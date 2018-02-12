@@ -83,43 +83,21 @@
 				</div>
 				<div id="hiddev_reg" style="display: none;">
 					<div class="row">
+				{% for value, text in form.method_reg.field.choices %}
+				  <div class="checkbox">
+				    <input id="id_method_reg_{{ forloop.counter0 }}" name="{{ form.method_reg.name }}" type="checkbox" value="{{ value }}"{% if value in checked_method_reg %} checked="checked"{% endif %}>
+				   	 <label for="id_method_reg_{{ forloop.counter0 }}">{{ text }}</label>
+				 	 </div>
+					{% endfor %}
+					</div>
+
+					<div class="row">
 					<div class="input-field col s12">
-						{{ form.is_reg_ensemble.errors }}
-						{{ form.is_reg_ensemble }}				
-						<label for="id_is_ensemble"> Want to run ensemble models? </label>
+						{{ form.is_reg_hyper.errors }}
+						{{ form.is_reg_hyper }}				
+						<label for="id_is_reg_hyper"> Want to do hyperparameter tuning? </label>
 					</div>		
 					</div>	
-
-					<div id="hiddev_reg_ensemble_yes" style="display: none;">
-						<div class="row">
-						<div class="input-field col s12">
-							{{ form.method_reg_ensemble.errors }}
-							{{ form.method_reg_ensemble }}				
-							<label for="id_method_reg_ensemble">Choose ensemble regression method</label>				
-						</div>		
-						</div>					
-					</div>
-
-					<div id="hiddev_reg_ensemble_no" style="display: none;">
-						<div class="row">
-						<div class="input-field col s12">
-							{{ form.method_reg.errors }}
-							{{ form.method_reg }}
-							<label for="id_method_reg">Choose Regression Algorithm</label>
-						</div>
-						</div>
-
-						<div class="row">
-						<div class="input-field col s12">
-							{{ form.is_reg_hyper.errors }}
-							{{ form.is_reg_hyper }}				
-							<label for="id_is_reg_hyper"> Want to do hyperparameter tuning? </label>
-						</div>		
-						</div>	
-					</div>
-					<script type="text/javascript">
-						showEnsembleRegDiv(document.getElementById('id_is_reg_ensemble'));
-					</script>
 				</div>
 				<script type="text/javascript">
 					showSuperDiv(document.getElementById('id_method_super'));			

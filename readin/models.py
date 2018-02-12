@@ -35,9 +35,14 @@ class Post(models.Model):
 	)
 	ALGO_REG_CHOICES=(
 		('DT', 'Decision Tree'),
-		('BR', 'Bayesian Ridge'),
+		('BayR', 'Bayesian Ridge'),
 		('SVR', 'Support Vector Regression'),
 		('LR', 'Linear Regression'),
+		('AdaR','Ada Boost Regressor'),
+		('BagR','Bagging Regressor'),
+		('ETR','Extra Trees Regressor'),
+		('GBR','Gradient Boosting Regressor'),
+		('RFR','Random Forest Regressor'),
 	)
 	ALGO_CLUST_CHOICES=(
 		('KM', 'K-Means Clustering'),
@@ -49,13 +54,6 @@ class Post(models.Model):
 		('Y', 'Yes'),
 		('N', 'No'),
 	)
-	ALGO_REG_ENSEMBLE=(
-		('AdaR','Ada Boost Regressor'),
-		('BR','Bagging Regressor'),
-		('ETR','Extra Trees Regressor'),
-		('GBR','Gradient Boosting Regressor'),
-		('RFR','Random Forest Regressor'),
-	)
 	title=models.CharField(max_length=200, default="Untitled")
 	inputfile=models.FileField(upload_to=user_directory_path, null=True, blank=True)	
 	comments=models.CharField(max_length=500, blank=True, null=True)
@@ -65,13 +63,10 @@ class Post(models.Model):
 	method_super=models.CharField(max_length=128, choices=ALGO_SUPER_CHOICES, blank=True)	
 	no_labels=models.PositiveSmallIntegerField(default=2)
 
-	is_reg_ensemble=models.CharField(max_length=128, choices=CHOICE_HYPERPARAM_TUNING, blank=True)
-	method_reg_ensemble=models.CharField(max_length=128, choices=ALGO_REG_ENSEMBLE, blank=True)
-
-	method_class=MultiSelectField(choices=ALGO_CLASS_CHOICES)#models.CharField(max_length=128, choices=ALGO_CLASS_CHOICES, blank=True)	
+	method_class=MultiSelectField(choices=ALGO_CLASS_CHOICES, blank=True)#models.CharField(max_length=128, choices=ALGO_CLASS_CHOICES, blank=True)	
 	is_class_hyper=models.CharField(max_length=128, choices=CHOICE_HYPERPARAM_TUNING, blank=True)	
 
-	method_reg=models.CharField(max_length=128, choices=ALGO_REG_CHOICES, blank=True)	
+	method_reg=MultiSelectField(choices=ALGO_REG_CHOICES, blank=True)#models.CharField(max_length=128, choices=ALGO_REG_CHOICES, blank=True)	
 	is_reg_hyper=models.CharField(max_length=128, choices=CHOICE_HYPERPARAM_TUNING, blank=True)	
 	
 	target=models.CharField(max_length=500, blank=True, null=True)
