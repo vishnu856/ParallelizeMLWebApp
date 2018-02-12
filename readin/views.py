@@ -360,18 +360,22 @@ def mapping_reg(s):
 	if s == 'LR':			
 		rgr=LinearRegression()
 		context_str="Linear Regressor"
+		context_img="https://www.mathplanet.com/Oldsite/media/28799/graph05.png"
 		params={'n_jobs': np.arange(1,11,1)}
 	if s == 'DT':	
 		rgr=DecisionTreeRegressor(criterion="mse", random_state=128, max_depth=32, min_samples_leaf=1)
 		context_str="Decision Tree Regressor"
+		context_img="https://farm4.static.flickr.com/3683/12780929034_95e084c2ec_b.jpg"
 		params={'random_state':np.arange(1,100,5), 'max_depth': np.arange(1,31,2), 'min_samples_leaf': np.arange(1,10,2)}
 	if s == 'BayR':
 		rgr=BayesianRidge()
+		context_img="https://www.researchgate.net/publication/227704840/figure/fig9/AS:267685791531011@1440832674118/Figure-3-A-Directed-Acyclic-Graph-of-the-Hierarchical-Bayesian-Multiple-Regression.png"
 		context_str="Bayesian Ridge Regressor"
 		params={'lambda_1':np.arange(1,100,5), 'n_iter': np.arange(1,31,2), 'alpha_1': np.arange(1,10,2)}
 	if s == 'SVR':
 		rgr=svm.SVR()
 		context_str="Support Vector Regressor"
+		context_img="http://graphicalmemes.com/images/support_vector_machine.png"
 		params={'max_iter':np.arange(1,100,5), 'C':np.arange(0.1, 1, 0.1)}	
 	if s == 'AdaR':
 		rgr=ensemble.AdaBoostRegressor()
@@ -543,7 +547,7 @@ def process(data_file, context, form, **kwargs):
 					context['hyper_result_1']=pd.DataFrame(grid_search.cv_results_).to_html()
 				else:			
 					Y_pred_1=cross_val_predict(rgr_1, X, Y, cv=int(100-validation_split))
-				rgr_2, context['algo_name_2'], params_2, context['img_url']=mapping_reg(method_reg[1])
+				rgr_2, context['algo_name_2'], params_2, context['img_url_2']=mapping_reg(method_reg[1])
 				is_hyper=form.cleaned_data['is_reg_hyper']
 				if is_hyper == 'Y':
 					grid_search=RandomizedSearchCV(rgr_2, params_2)
