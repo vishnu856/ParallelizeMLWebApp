@@ -2,9 +2,17 @@
 {% extends 'navbar.html' %}
 
 {% block content %}
-	<h4 class="center"> Results {% if algo_name %} for {{ algo_name }} {% endif %} </h4>
-	<div class="container">
-	<div class="responsive-table" style="overflow-x:scroll; height: 80%;">
+<div class="row container">
+<div class="card center" style="height: 800px">
+	<div class="card-title blue white-text">Results {% if algo_name %} for {{ algo_name }} {% endif %}<i class="material-icons right">poll</i></div>
+	<div class="card-tabs"> 
+		<ul class="tabs tabs-fixed-width">
+			<li class="tab"><a href="#result_table_1">Predictions</a></li>
+			<li class="tab"><a href="#class_report_1">Reports</a></li>
+			<li class="tab"><a href="#graph_1">Graphs</a></li>
+	      </ul>
+	</div>
+	<div id="result_table_1" class="responsive-table" style="overflow-x:scroll; height: 80%;">
 		<table class="highlight centered">
 			<thead>
 				<tr>		
@@ -24,45 +32,49 @@
 			{% endfor %}
 		</table>
 	</div>
-	<div class="responsive-table">
-		<h5 class="center"> Classification Report </h5>
-		{{ class_report|safe }}
+	<div id="class_report_1" style="overflow-x:scroll; overflow-y:scroll; height: 80%;">
+		<div class="responsive-table">
+			<h5 class="center"> Classification Report </h5>
+			{{ class_report|safe }}
+		</div>
+		{% if hyper_result %}
+		<h5 class="center"> Hyperparameter Tuning Report </h5>
+		<div class="responsive-table" style="overflow-x:scroll; height: 80%;">	
+			{{ hyper_result|safe }}
+		</div>
+		{% endif %}	
+		<div>
+			<h5 class="center"> Confusion Matrix </h5>
+			{{ confusion_matrix|safe }}
+		</div>
+		<div class="responsive-table" style="overflow-x:scroll;">
+			<h5 class="center"> Result metric values for the classifier </h5>		
+			<table class="highlight centered">
+				<thead>
+					<tr> 
+						<th> Precision </th>
+						<th> Recall </th>
+						<th> F-Score </th>
+						<th> Accuracy </th>
+						<th> AUC </th>
+					</tr>
+				</thead>
+				<tbody>
+					<td> {{ precision }} </td>
+					<td> {{ recall }} </td>
+					<td> {{ fscore }} </td>
+					<td> {{ accuracy }} </td>
+					<td> {{ roc_auc }} </td>
+				</tbody>
+			</table>
+		</div>
 	</div>
-	{% if hyper_result %}
-	<h5 class="center"> Hyperparameter Tuning Report </h5>
-	<div class="responsive-table" style="overflow-x:scroll; height: 80%;">	
-		{{ hyper_result|safe }}
+	<div id="graph_1">
+		<h5 class="center">Macro averaged ROC curve with area: {{ roc_auc|safe }} </h5>
+		<div id="linechart_material" class="center" style="display:block;">
+		</div>
 	</div>
-	{% endif %}	
-
-	<div>
-		<h5 class="center"> Confusion Matrix </h5>
-		{{ confusion_matrix|safe }}
-	</div>
-	<div class="responsive-table" style="overflow-x:scroll;">
-		<h5 class="center"> Result metric values for the classifier </h5>		
-		<table class="highlight centered">
-			<thead>
-				<tr> 
-					<th> Precision </th>
-					<th> Recall </th>
-					<th> F-Score </th>
-					<th> Accuracy </th>
-					<th> AUC </th>
-				</tr>
-			</thead>
-			<tbody>
-				<td> {{ precision }} </td>
-				<td> {{ recall }} </td>
-				<td> {{ fscore }} </td>
-				<td> {{ accuracy }} </td>
-				<td> {{ roc_auc }} </td>
-			</tbody>
-		</table>
-	</div>
-	<div id="linechart_material" class="center" style="display:block;">
-	</div>
-	</div>
+</div>
 	<script type="text/javascript">
 		 google.charts.load('current', {
 		   'packages': ['scatter','line']
@@ -85,8 +97,8 @@
 			    title: 'The Receiver operating Characteristic Curve',
 			    subtitle: 'On a supervised classification algorithm'
 			  },
-			  curveType:'function'
-			  
+			  curveType:'function',
+			  legend: {position: 'none'}
 			};
 
 			var chart = new google.charts.Line(document.getElementById('linechart_material'));
