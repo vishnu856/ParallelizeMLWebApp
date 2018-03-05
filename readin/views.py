@@ -465,6 +465,18 @@ def two_model_reg_render(form, data_file, Y, context, Y_pred_1, Y_pred_2, target
 	# here you can add things like:
 	return render_to_response("result_reg_comp.html",context)
 
+def mapping_clust(method_clust, n_clusters):
+	clust=None
+	if method_clust == 'KM':
+		clust=KMeans(n_clusters)
+	if method_clust == 'SC':
+		clust=SpectralClustering(n_clusters)
+	if method_clust == 'AC':
+		clust=AgglomerativeClustering(n_clusters)
+	if method_clust == 'BC':
+		clust=Birch(n_clusters)
+	return clust
+
 def process(data_file, context, form, **kwargs):
 
 	X=data_file.fillna(0)
@@ -567,35 +579,30 @@ def process(data_file, context, form, **kwargs):
 				X=X.loc[:, X.columns!=i]
 		if method_unsuper=='C':
 			method_clust=form.cleaned_data['method_clust']
-			if method_clust == 'KM':
-				clust=KMeans(n_clusters=form.cleaned_data['no_clusters']).fit(X)
-			if method_clust == 'SC':
-				clust=SpectralClustering(n_clusters=form.cleaned_data['no_clusters']).fit(X)
-			if method_clust == 'AC':
-				clust=AgglomerativeClustering(n_clusters=form.cleaned_data['no_clusters']).fit(X)
-			if method_clust == 'BC':
-				clust=Birch(n_clusters=form.cleaned_data['no_clusters']).fit(X)
-			context['x_cols']=data_file.columns
-			context['tot_cols']=range(len(data_file.columns)+1)
-			context['y_pred']=clust.labels_
-			Y_pred=np.matrix(clust.labels_).T
-			tot_zip=np.concatenate([data_file, Y_pred], axis=1)
-			context['full_set']=np.array(tot_zip)
-			context['silhouette']=met.silhouette_score(X, labels=Y_pred)
-			context['chscore']=met.calinski_harabaz_score(X, labels=Y_pred)
-			context['form']=form
+			n_clusters=form.cleaned_data['no_clusters']
+			if len(method_clust) == 1:
+				clust=mapping_clust(method_clust[0], n_clusters).fit(X)
+				context['x_cols']=data_file.columns
+				context['tot_cols']=range(len(data_file.columns)+1)
+				context['y_pred']=clust.labels_
+				Y_pred=np.matrix(clust.labels_).T
+				tot_zip=np.concatenate([data_file, Y_pred], axis=1)
+				context['full_set']=np.array(tot_zip)
+				context['silhouette']=met.silhouette_score(X, labels=Y_pred)
+				context['chscore']=met.calinski_harabaz_score(X, labels=Y_pred)
+				context['form']=form
 
-			pca=PCA(n_components=2).fit(X)
-			pca_2d=pca.transform(X)
-			#print(X.shape)
-			#print(pca_2d)
-			y_pred=[]
-			for r in clust.labels_:
-				y_pred.append("Cluster "+str(r))
-			full_set=np.concatenate([pca_2d, pd.DataFrame(np.matrix(y_pred)).T], axis=1)
-			#print(full_set)
-			context['zip_json']=json.dumps(full_set.tolist())
-			return render_to_response("result_clust.html", context)
+				pca=PCA(n_components=2).fit(X)
+				pca_2d=pca.transform(X)
+				#print(X.shape)
+				#print(pca_2d)
+				y_pred=[]
+				for r in clust.labels_:
+					y_pred.append("Cluster "+str(r))
+				full_set=np.concatenate([pca_2d, pd.DataFrame(np.matrix(y_pred)).T], axis=1)
+				#print(full_set)
+				context['zip_json']=json.dumps(full_set.tolist())
+				return render_to_response("result_clust.html", context)
 	if algorithm_choice == 'F':
 		target=form.cleaned_data['target']
 		no_features=form.cleaned_data['no_features']

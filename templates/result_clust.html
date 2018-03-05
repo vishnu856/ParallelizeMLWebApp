@@ -2,33 +2,104 @@
 {% extends 'navbar.html' %}
 
 {% block content %}
-	<h4 class="center"> Results </h4>
-	<div class="container">
-	<div class="responsive-table" style="overflow-x:scroll; height: 80%;">
-
-        <table class="highlight centered" id="myTable">
-			<thead>
-				<tr>		
-					{% for col in x_cols %}
-						<th><button onclick="exportTableToCSV(this)"> {{ col }} </button></th>
-					{% endfor %}		
-					<th> <button onclick="exportTableToCSV(this)">Cluster Label: </button></th>
-				</tr>
-
-			</thead>
-			{% for y1 in full_set %}
-			<tbody>		
-				{% for ele in y1 %}		
-					<td> {{ ele }} </td>
-				{% endfor %}
-			</tbody>
-			{% endfor %}
-		</table>
-
+<div class="row container">
+<div class="card center" style="height: 900px">
+	<div class="card-title"> Results for {%if algo_name %} algo_name {% endif %} </h4>
+	<div class="card-tabs"> 
+		<ul class="tabs tabs-fixed-width">
+			<li class="tab"><a href="#result_table_1">Results</a></li>
+			<li class="tab"><a href="#clust_report_1">Reports</a></li>
+			<li class="tab"><a href="#graph_1">Visualize results</a></li>
+	      </ul>
 	</div>
-    <div class="responsive-table" style="overflow-x:scroll; height: 80%;">
-   <h4 class="center"> EDA </h4>
-      <canvas id="bar-chart" width="8" height="4"></canvas>
+	<div class="card-content">
+	<div id="result_table_1" style="overflow-x:scroll; height: 80%;">
+		<div class="responsive-table" style="overflow-x:scroll; height: 80%;">
+			<table class="highlight centered" id="myTable">
+				<thead>
+					<tr>		
+						{% for col in x_cols %}
+							<th><button onclick="exportTableToCSV(this)"> {{ col }} </button></th>
+						{% endfor %}		
+						<th> <button onclick="exportTableToCSV(this)">Cluster Label: </button></th>
+					</tr>
+
+				</thead>
+				{% for y1 in full_set %}
+				<tbody>		
+					{% for ele in y1 %}		
+						<td> {{ ele }} </td>
+					{% endfor %}
+				</tbody>
+				{% endfor %}
+			</table>
+		</div>
+	    <div style="overflow-x:scroll; height: 80%;">
+	   <h4 class="center"> EDA </h4>
+	      <canvas id="bar-chart" width="8" height="4"></canvas>
+		</div>
+	</div>
+	<div id="clust_report_1">
+		<div class="responsive-table" style="overflow-x:scroll;">
+			<h5 class="center"> Result metric values for the clustering technique: </h5>		
+			<table class="highlight centered">
+				<thead>
+					<tr> 
+						<th> Silhouette score </th>
+						<th> Calinski-Harabaz score </th>
+					</tr>
+				</thead>
+				<tbody>
+					<td> {{ silhouette }} </td>
+					<td> {{ chscore }} </td>
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<div id="graph_1">
+		<h5 class="center"> Plot of clustering points in a 2-dimensional space </h5>
+		<div id="scatterchart_material" class="center" style="display:block;">
+
+		</div>
+	</div>
+	</div>
+     <script type="text/javascript">
+		 google.charts.load('current', {
+		   'packages': ['corechart']
+		 });
+		 google.charts.setOnLoadCallback(drawChart);
+		function drawChart () {
+
+			var data = new google.visualization.DataTable();
+//			{% for c in classes %}
+//				data.addColumns({{ c|safe }});
+//			{% endfor %}
+			data.addColumn('number');
+			data.addColumn('number');
+			data.addColumn({type:'string',label: 'label', p:{role:'tooltip'}});
+			data.addRows({{ zip_json|safe }})
+
+			var options = {
+			  width: 1000,
+			  height: 500,
+			  chart: {
+			    title: 'Scatter Plot for clustering',
+			    subtitle: 'On an unsupervised clustering algorithm'
+			  },
+			  curveType:'function',
+			  hAxis: {title: 'Principal Component 1'},
+		          vAxis: {title: 'Principal Component 2'},
+			  legend : 'none',
+
+			};
+
+			var chart = new google.visualization.ScatterChart(document.getElementById('scatterchart_material'));
+
+			chart.draw(data, options);// google.charts.Scatter.convertOptions(options));
+
+		}
+
+	</script>
 <script>
 
 function exportTableToCSV(element) {
@@ -122,61 +193,4 @@ new Chart(document.getElementById("bar-chart"), {
 });
 }
 </script>
-	</div>
-	<div class="responsive-table" style="overflow-x:scroll;">
-		<h5 class="center"> Result metric values for the clustering technique: </h5>		
-		<table class="highlight centered">
-			<thead>
-				<tr> 
-					<th> Silhouette score </th>
-					<th> Calinski-Harabaz score </th>
-				</tr>
-			</thead>
-			<tbody>
-				<td> {{ silhouette }} </td>
-				<td> {{ chscore }} </td>
-			</tbody>
-		</table>
-	</div>
-	<div id="scatterchart_material" class="center" style="display:block;">
-
-	</div>
-	</div>
-     <script type="text/javascript">
-		 google.charts.load('current', {
-		   'packages': ['corechart']
-		 });
-		 google.charts.setOnLoadCallback(drawChart);
-		function drawChart () {
-
-			var data = new google.visualization.DataTable();
-//			{% for c in classes %}
-//				data.addColumns({{ c|safe }});
-//			{% endfor %}
-			data.addColumn('number');
-			data.addColumn('number');
-			data.addColumn({type:'string',label: 'label', p:{role:'tooltip'}});
-			data.addRows({{ zip_json|safe }})
-
-			var options = {
-			  width: 1000,
-			  height: 500,
-			  chart: {
-			    title: 'Scatter Plot for clustering',
-			    subtitle: 'On an unsupervised clustering algorithm'
-			  },
-			  curveType:'function',
-			  hAxis: {title: 'Principal Component 1'},
-		          vAxis: {title: 'Principal Component 2'},
-			  legend : 'none',
-
-			};
-
-			var chart = new google.visualization.ScatterChart(document.getElementById('scatterchart_material'));
-
-			chart.draw(data, options);// google.charts.Scatter.convertOptions(options));
-
-		}
-
-	</script>
 {% endblock %}

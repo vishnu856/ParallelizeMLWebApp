@@ -74,7 +74,7 @@ class Post(models.Model):
 	method_unsuper=models.CharField(max_length=128, choices=ALGO_UNSUPER_CHOICES, blank=True)
 
 	no_clusters=models.PositiveSmallIntegerField(default=2)
-	method_clust=models.CharField(max_length=128, choices=ALGO_CLUST_CHOICES, blank=True)	
+	method_clust=MultiSelectField(choices=ALGO_CLUST_CHOICES, blank=True)#models.CharField(max_length=128, choices=ALGO_CLUST_CHOICES, blank=True)	
 
 	no_features=models.PositiveSmallIntegerField(default=2)
 
