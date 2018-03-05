@@ -4,7 +4,7 @@
 {% block content %}
 <div class="row container">
 <div class="card center" style="height: 900px">
-	<div class="card-title"> Results for {%if algo_name %} algo_name {% endif %} </h4>
+	<div class="card-title"> Results {%if algo_name %} for {{algo_name}} {% endif %} </h4>
 	<div class="card-tabs"> 
 		<ul class="tabs tabs-fixed-width">
 			<li class="tab"><a href="#result_table_1">Results</a></li>
@@ -56,7 +56,7 @@
 			</table>
 		</div>
 	</div>
-	<div id="graph_1">
+	<div id="graph_1" class="section container" style="overflow-x:scroll; width: 100%">
 		<h5 class="center"> Plot of clustering points in a 2-dimensional space </h5>
 		<div id="scatterchart_material" class="center" style="display:block;">
 

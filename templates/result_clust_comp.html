@@ -1,0 +1,384 @@
+
+{% extends 'navbar.html' %}
+
+{% block content %}
+<div class="row">
+<div class="card left col s6" style="height: 900px">
+	<div class="card-title"> Results {%if algo_name_1 %} for {{algo_name_1}} {% endif %}<i class="material-icons right">poll</i></div>
+	<div class="card-tabs"> 
+		<ul class="tabs tabs-fixed-width">
+			<li class="tab"><a href="#result_table_1">Results</a></li>
+			<li class="tab"><a href="#clust_report_1">Reports</a></li>
+			<li class="tab"><a href="#graph_1">Visualize results</a></li>
+	      </ul>
+	</div>
+	<div class="card-content">
+	<div id="result_table_1" style="overflow-x:scroll; height: 80%;">
+		<div class="responsive-table" style="overflow-x:scroll; height: 80%;">
+			<table class="highlight centered" id="myTable">
+				<thead>
+					<tr>		
+						{% for col in x_cols_1 %}
+							<th><button onclick="exportTable1ToCSV(this)"> {{ col }} </button></th>
+						{% endfor %}		
+						<th> <button onclick="exportTable1ToCSV(this)">Cluster Label: </button></th>
+					</tr>
+
+				</thead>
+				{% for y1 in full_set_1 %}
+				<tbody>		
+					{% for ele in y1 %}		
+						<td> {{ ele }} </td>
+					{% endfor %}
+				</tbody>
+				{% endfor %}
+			</table>
+		</div>
+	    	<div style="overflow-x:scroll; height: 80%;">
+		   	<h4 class="center"> EDA </h4>
+	      		<canvas id="bar-chart-1" width="8" height="4"></canvas>
+		</div>
+	</div>
+	<div id="clust_report_1">
+		<div class="responsive-table" style="overflow-x:scroll;">
+			<h5 class="center"> Result metric values for the clustering technique: </h5>		
+			<table class="highlight centered">
+				<thead>
+					<tr> 
+						<th> Silhouette score </th>
+						<th> Calinski-Harabaz score </th>
+					</tr>
+				</thead>
+				<tbody>
+					<td> {{ silhouette_1 }} </td>
+					<td> {{ chscore_1 }} </td>
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<div id="graph_1" class="section container" style="overflow-x:scroll; width: 100%">
+		<h5 class="center"> Plot of clustering points in a 2-dimensional space </h5>
+		<div id="scatterchart_material_1" class="center" style="display:block;">
+		</div>
+	</div>
+	</div>
+</div>
+
+<div class="card right col s6" style="height: 900px">
+	<div class="card-title"> Results {%if algo_name_2 %} for {{algo_name_2}} {% endif %}<i class="material-icons right">poll</i></div>
+	<div class="card-tabs"> 
+		<ul class="tabs tabs-fixed-width">
+			<li class="tab"><a href="#result_table_2">Results</a></li>
+			<li class="tab"><a href="#clust_report_2">Reports</a></li>
+			<li class="tab"><a href="#graph_2">Visualize results</a></li>
+	      </ul>
+	</div>
+	<div class="card-content">
+	<div id="result_table_2" style="overflow-x:scroll; height: 80%;">
+		<div class="responsive-table" style="overflow-x:scroll; height: 80%;">
+			<table class="highlight centered" id="myTable">
+				<thead>
+					<tr>		
+						{% for col in x_cols_2 %}
+							<th><button onclick="exportTable2ToCSV(this)"> {{ col }} </button></th>
+						{% endfor %}		
+						<th> <button onclick="exportTable2ToCSV(this)">Cluster Label: </button></th>
+					</tr>
+
+				</thead>
+				{% for y1 in full_set_2 %}
+				<tbody>		
+					{% for ele in y1 %}		
+						<td> {{ ele }} </td>
+					{% endfor %}
+				</tbody>
+				{% endfor %}
+			</table>
+		</div>
+	    	<div style="overflow-x:scroll; height: 80%;">
+		   	<h4 class="center"> EDA </h4>
+	      		<canvas id="bar-chart-2" width="8" height="4"></canvas>
+		</div>
+	</div>
+	<div id="clust_report_2">
+		<div class="responsive-table" style="overflow-x:scroll;">
+			<h5 class="center"> Result metric values for the clustering technique: </h5>		
+			<table class="highlight centered">
+				<thead>
+					<tr> 
+						<th> Silhouette score </th>
+						<th> Calinski-Harabaz score </th>
+					</tr>
+				</thead>
+				<tbody>
+					<td> {{ silhouette_2 }} </td>
+					<td> {{ chscore_2 }} </td>
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<div id="graph_2" class="section container" style="overflow-x:scroll; width: 100%">
+		<h5 class="center"> Plot of clustering points in a 2-dimensional space </h5>
+		<div id="scatterchart_material_2" class="center" style="display:block;">
+		</div>
+	</div>
+	</div>
+</div>
+
+
+</div>
+     <script type="text/javascript">
+		 google.charts.load('current', {
+		   'packages': ['corechart']
+		 });
+		 google.charts.setOnLoadCallback(drawChart1);
+		google.charts.setOnLoadCallback(drawChart2);
+		function drawChart1 () {
+
+			var data = new google.visualization.DataTable();
+//			{% for c in classes %}
+//				data.addColumns({{ c|safe }});
+//			{% endfor %}
+			data.addColumn('number');
+			data.addColumn('number');
+			data.addColumn({type:'string',label: 'label', p:{role:'tooltip'}});
+			data.addRows({{ zip_json_1|safe }})
+
+			var options = {
+			  width: 1000,
+			  height: 500,
+			  chart: {
+			    title: 'Scatter Plot for clustering',
+			    subtitle: 'On an unsupervised clustering algorithm'
+			  },
+			  curveType:'function',
+			  hAxis: {title: 'Principal Component 1'},
+		          vAxis: {title: 'Principal Component 2'},
+			  legend : 'none',
+
+			};
+
+			var chart = new google.visualization.ScatterChart(document.getElementById('scatterchart_material_1'));
+
+			chart.draw(data, options);// google.charts.Scatter.convertOptions(options));
+
+		}
+
+		function drawChart2 () {
+
+			var data = new google.visualization.DataTable();
+//			{% for c in classes %}
+//				data.addColumns({{ c|safe }});
+//			{% endfor %}
+			data.addColumn('number');
+			data.addColumn('number');
+			data.addColumn({type:'string',label: 'label', p:{role:'tooltip'}});
+			data.addRows({{ zip_json_2|safe }})
+
+			var options = {
+			  width: 1000,
+			  height: 500,
+			  chart: {
+			    title: 'Scatter Plot for clustering',
+			    subtitle: 'On an unsupervised clustering algorithm'
+			  },
+			  curveType:'function',
+			  hAxis: {title: 'Principal Component 1'},
+		          vAxis: {title: 'Principal Component 2'},
+			  legend : 'none',
+
+			};
+
+			var chart = new google.visualization.ScatterChart(document.getElementById('scatterchart_material_2'));
+
+			chart.draw(data, options);// google.charts.Scatter.convertOptions(options));
+
+		}
+
+
+	</script>
+<script>
+
+function exportTable1ToCSV(element) {
+  var f = element.parentNode.cellIndex;
+    var count=0;
+    var cols1 = [];
+    var coll = [];
+    for (var i = 1; i < 300; i++) {
+
+
+        for (var j = f; j < f+1; j++)
+
+             var z = document.getElementById("myTable").rows[i].cells[j].innerText;
+              cols1.push(z);
+
+
+
+    }
+
+     var cols1Counter = {}, results = []; namess=[];
+    cols1.forEach(function (col1) {
+        if (!cols1Counter.hasOwnProperty(col1)) {
+            results.push(0);
+            namess.push(col1);
+            coll.push('#8e5ea2');
+            cols1Counter[col1] = 1;
+        }
+        else {
+
+            results.push(cols1Counter[col1]++);
+        }
+    });
+   var r=[];
+   var x=[];
+  for (var i=0; i<namess.length; i++)
+  {
+     x[i]=1;
+  }
+  var count=0;
+ for (var i=0; i<cols1.length; i++){
+
+    if (r.indexOf(cols1[i])==-1){
+    r.push(cols1[i]);
+    }
+    else {
+          for (var j=0; j<r.length; j++)
+          {
+          if(cols1[i] == r[j])
+          {
+        count++;
+        x[j] = count;
+        }
+        }
+    }
+
+    }
+
+var largest = Math.max.apply(Math, x);
+ var n = document.getElementById("myTable").rows[0].cells[f].innerText;
+new Chart(document.getElementById("bar-chart-1"), {
+
+    type: 'bar',
+    data: {
+      labels: namess,
+      datasets: [
+        {
+          label: "",
+          backgroundColor: coll,
+          data: x
+        }
+      ]
+    },
+    options: {
+      legend: { display: false },
+      title: {
+        display: true,
+        text: n,
+      },
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true,
+                    stepSize: 100000,
+                    min: 0,
+                    max: largest+5,
+                }
+            }]
+        }
+
+    }
+});
+}
+
+function exportTable2ToCSV(element) {
+  var f = element.parentNode.cellIndex;
+    var count=0;
+    var cols1 = [];
+    var coll = [];
+    for (var i = 1; i < 300; i++) {
+
+
+        for (var j = f; j < f+1; j++)
+
+             var z = document.getElementById("myTable").rows[i].cells[j].innerText;
+              cols1.push(z);
+
+
+
+    }
+
+     var cols1Counter = {}, results = []; namess=[];
+    cols1.forEach(function (col1) {
+        if (!cols1Counter.hasOwnProperty(col1)) {
+            results.push(0);
+            namess.push(col1);
+            coll.push('#8e5ea2');
+            cols1Counter[col1] = 1;
+        }
+        else {
+
+            results.push(cols1Counter[col1]++);
+        }
+    });
+   var r=[];
+   var x=[];
+  for (var i=0; i<namess.length; i++)
+  {
+     x[i]=1;
+  }
+  var count=0;
+ for (var i=0; i<cols1.length; i++){
+
+    if (r.indexOf(cols1[i])==-1){
+    r.push(cols1[i]);
+    }
+    else {
+          for (var j=0; j<r.length; j++)
+          {
+          if(cols1[i] == r[j])
+          {
+        count++;
+        x[j] = count;
+        }
+        }
+    }
+
+    }
+
+var largest = Math.max.apply(Math, x);
+ var n = document.getElementById("myTable").rows[0].cells[f].innerText;
+new Chart(document.getElementById("bar-chart-2"), {
+
+    type: 'bar',
+    data: {
+      labels: namess,
+      datasets: [
+        {
+          label: "",
+          backgroundColor: coll,
+          data: x
+        }
+      ]
+    },
+    options: {
+      legend: { display: false },
+      title: {
+        display: true,
+        text: n,
+      },
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true,
+                    stepSize: 100000,
+                    min: 0,
+                    max: largest+5,
+                }
+            }]
+        }
+
+    }
+});
+}
+</script>
+{% endblock %}
