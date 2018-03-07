@@ -1,9 +1,14 @@
 <html>
 {% extends 'navbar.html' %}
 {% block content %}
+<style>
+	.hex { opacity: 0.5; }
+</style>
 <body>
 <h4 class="center"> Hello World!!! This is home. </h4>
 <div class="section container">
+<h5 class="center">Your experiments</h5>
+<!--
 <div class="collection with-header">
 <ul>
 	<li class="collection-header center"><h5>Your experiments</h5></li>
@@ -12,8 +17,32 @@
 	{% endfor %}
 </ul>
 </div>
+-->
+
+<div id="grid" style="position: relative;">
+<ul id="hexGrid">
+	{% for post in object_list %}
+		<li class="hex">
+			<div class="hexIn">
+				<a class="hexLink" href="{% url 'post_edit' post.pk %}"> 
+					<img src="https://farm4.staticflickr.com/3771/13199704015_72aa535bd7.jpg" alt="" />			
+					<h1>{{ post.title }} </h1> 
+					<p>{{ post.comments }} </p>
+				</a>
+			</div>
+		</li>
+	{% endfor %}
+</ul>
+</div>
+
 </div>
 </body>
+
+
+
+<script>
+
+</script>
 {% endblock %}
 </html>
 
