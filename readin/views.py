@@ -144,40 +144,43 @@ def mapping_class(s):
 	if s == 'DT':
 		clf=DecisionTreeClassifier(criterion="gini", random_state=100, max_depth=32, min_samples_leaf=5)
 		context_str="Decision Tree"
-		context_img="https://images.cdn2.stockunlimited.net/preview1300/tree-design-on-circuit-board-background_1646948.jpg"
 		params={'random_state':np.arange(1,100,5), 'max_depth': np.arange(1,31,2), 'min_samples_leaf': np.arange(1,10,2)}
 		#clf_gini.fit(X, Y)
 	if s == 'SVM':
 		clf=svm.LinearSVC()
 		context_str="Support Vector Machine"
-		context_img="https://media.licdn.com/mpr/mpr/AAEAAQAAAAAAAAxDAAAAJDNlNjYwZjUxLTRjMzMtNDM4Ni05YjZiLTJlYmRhZGExNTg2MA.jpg"
-		#context_img="http://graphicalmemes.com/images/support_vector_machine.png"
 		params={'random_state':np.arange(1,100,5), 'C':np.arange(0.1, 1, 0.1)}
 	if s == 'NN':
 		clf=NN.MLPClassifier()	
 		context_str="Neural Networks (Multi-layer Perceptron)"
 		params={'random_state':np.arange(1,100,5), 'hidden_layer_sizes':np.arange(50,100,2), 'alpha':np.arange(0.1,1,0.1), 'max_iter':np.arange(90, 100, 1)}
-		context_img="https://www.onlinebooksreview.com/uploads/blog_images/2017/09/25_neuralnet.jpg"
 	if s == 'LR':
 		clf=LogisticRegression()
 		context_str="Logistic Regression"
-		context_img="https://blog.knowledgent.com/wp-content/uploads/2015/12/Logistic_Regression.jpg"
 		params={'random_state':np.arange(1,100,5), 'C':np.arange(0.1, 1, 0.1), 'max_iter':np.arange(90, 100, 1)}
 	if s == 'AdaC':
 		clf=ensemble.AdaBoostClassifier()
 		context_str="Ensemble Ada Boost Classifier"
+		params={'n_estimators':np.arange(25,75), 'learning_rate':np.arange(0.1, 1, 0.1), 'random_state':np.arange(1, 100, 5)}
 	if s == 'BC':
 		clf=ensemble.BaggingClassifier()
 		context_str="Ensemble Bagging Classifier"
+		params={'n_estimators':np.arange(25,75), 'max_samples':np.arange(0.1, 1, 0.1), 'random_state':np.arange(1,100,5)}
+
 	if s == 'ETC':
 		clf=ensemble.ExtraTreesClassifier()
 		context_str="Ensemble Extra Trees Classifier"
+		params={'n_estimators':np.arange(25,75), 'max_depth': np.arange(1,31,2), 'min_samples_leaf': np.arange(1,10,2), 'max_features':np.arange(0.1, 1, 1), 'random_state':np.arange(1,100,5)}
+
 	if s == 'GBC':
 		clf=ensemble.GradientBoostingClassifier()
 		context_str="Ensemble Gradient Boosting Classifier"												
+		params={'n_estimators':np.arange(25,75), 'learning_rate':np.arange(0.1, 1, 0.1), 'max_features':np.arange(0.1, 1, 1), 'random_state':np.arange(1,100,5)}
+
 	if s == 'RFC':
 		clf=ensemble.RandomForestClassifier()
 		context_str="Ensemble Random Forest Classifier"
+		params={'n_estimators':np.arange(25,75), 'max_depth': np.arange(1,31,2), 'min_samples_leaf': np.arange(1,10,2) , 'max_features':np.arange(0.1, 1, 1), 'random_state':np.arange(1,100,5)}
 
 	return clf, context_str, params, context_img
 
@@ -360,38 +363,48 @@ def mapping_reg(s):
 	if s == 'LR':			
 		rgr=LinearRegression()
 		context_str="Linear Regressor"
-		context_img="https://www.mathplanet.com/Oldsite/media/28799/graph05.png"
 		params={'n_jobs': np.arange(1,11,1)}
+
 	if s == 'DT':	
 		rgr=DecisionTreeRegressor(criterion="mse", random_state=128, max_depth=32, min_samples_leaf=1)
 		context_str="Decision Tree Regressor"
-		context_img="https://farm4.static.flickr.com/3683/12780929034_95e084c2ec_b.jpg"
 		params={'random_state':np.arange(1,100,5), 'max_depth': np.arange(1,31,2), 'min_samples_leaf': np.arange(1,10,2)}
+
 	if s == 'BayR':
 		rgr=BayesianRidge()
-		context_img="https://www.researchgate.net/publication/227704840/figure/fig9/AS:267685791531011@1440832674118/Figure-3-A-Directed-Acyclic-Graph-of-the-Hierarchical-Bayesian-Multiple-Regression.png"
 		context_str="Bayesian Ridge Regressor"
 		params={'lambda_1':np.arange(1,100,5), 'n_iter': np.arange(1,31,2), 'alpha_1': np.arange(1,10,2)}
+
 	if s == 'SVR':
 		rgr=svm.SVR()
 		context_str="Support Vector Regressor"
-		context_img="http://graphicalmemes.com/images/support_vector_machine.png"
-		params={'max_iter':np.arange(1,100,5), 'C':np.arange(0.1, 1, 0.1)}	
+		params={'max_iter':np.arange(1,100,5), 'C':np.arange(0.1, 1, 0.1)}
+	
 	if s == 'AdaR':
 		rgr=ensemble.AdaBoostRegressor()
 		context_str="Ensemble Ada Boost Regressor"
+		params={'n_estimators':np.arange(25,75), 'learning_rate':np.arange(0.1, 1, 0.1), 'random_state':np.arange(1, 100, 5)}
+
 	if s == 'BagR':
 		rgr=ensemble.BaggingRegressor()
 		context_str="Ensemble Bagging Regressor"
+		params={'n_estimators':np.arange(25,75), 'max_samples':np.arange(0.1, 1, 0.1), 'random_state':np.arange(1,100,5)}
+
 	if s == 'ETR':
 		rgr=ensemble.ExtraTreesRegressor()
 		context_str="Ensemble Extra Trees Regressor"
+		params={'n_estimators':np.arange(25,75), 'max_depth': np.arange(1,31,2), 'min_samples_leaf': np.arange(1,10,2), 'max_features':np.arange(0.1, 1, 1), 'random_state':np.arange(1,100,5)}
+
 	if s == 'GBR':
 		rgr=ensemble.GradientBoostingRegressor()
-		context_str="Ensemble Gradient Boosting Regressor"												
+		context_str="Ensemble Gradient Boosting Regressor"					
+		params={'n_estimators':np.arange(25,75), 'learning_rate':np.arange(0.1, 1, 0.1), 'max_features':np.arange(0.1, 1, 1), 'random_state':np.arange(1,100,5)}
+							
 	if s == 'RFR':
 		rgr=ensemble.RandomForestRegressor()
 		context_str="Ensemble Random Forest Regressor"
+		params={'n_estimators':np.arange(25,75), 'max_depth': np.arange(1,31,2), 'min_samples_leaf': np.arange(1,10,2) , 'max_features':np.arange(0.1, 1, 1), 'random_state':np.arange(1,100,5)}
+
 	return rgr, context_str, params, context_img
 
 def one_model_reg_render(form, data_file, Y, context, Y_pred, target):
