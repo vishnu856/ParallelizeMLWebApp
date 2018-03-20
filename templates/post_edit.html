@@ -35,6 +35,16 @@
 			</div>			
 
 			<div id="hiddev_super" style="display: none;">
+				<div class="file-field input-field">
+					<div class="btn">
+						<span for="id_test_file"> Choose File </span>
+						{{ form.test_file }}
+						{{ form.test_file.errors }}
+					</div>
+					 <div class="file-path-wrapper">
+						<input class="file-path validate" type="text" placeholder="Upload the input test CSV">
+					 </div>
+				</div>				
 				<div class="row">
 				<div class="input-field col s12">
 					{{ form.validation_split.errors }}

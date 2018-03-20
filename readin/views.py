@@ -184,21 +184,32 @@ def mapping_class(s):
 
 	return clf, context_str, params, context_img
 
-def one_model_class_render(form, data_file, Y, context, Y_pred, target):
-	X_test=data_file.loc[:, data_file.columns!=target]
-	Y_test=Y
-	context['x_cols']=X_test.columns
-	context['tot_cols']=range(len(X_test.columns)+2)
+def one_model_class_render(form, data_file, Y, context, test_file, Y_pred, Y_pred_test, target):
+	X_test=test_file.loc[:, test_file.columns!=target]
+
+	X_train=data_file.loc[:, data_file.columns!=target]
+	Y_train=Y	
+	
+	context['x_test_cols']=X_test.columns
+	context['tot_test_cols']=range(len(X_train.columns)+1)
+	context['y_pred_test']=Y_pred_test
+	Y_test_pred=np.matrix(Y_pred_test).T
+	test_val_set=np.concatenate([X_test, Y_test_pred], axis=1)
+	test_zip=np.concatenate([X_test, Y_test_pred],axis=1)
+	context['full_test_set']=np.array(test_zip)
+
+	context['x_cols']=X_train.columns
+	context['tot_cols']=range(len(X_train.columns)+2)
 	context['y_pred']=Y_pred 
-	context['y_test']=Y_test 
-	zip_val=list(zip(Y_test, Y_pred))
+	context['y_train']=Y_train 
+	zip_val=list(zip(Y_train, Y_pred))
 	Y_pred=np.matrix(Y_pred).T
-	Y_test=np.matrix(Y_test).T
-	val_set=np.concatenate([X_test, Y_test], axis=1)
+	Y_train=np.matrix(Y_train).T
+	val_set=np.concatenate([X_train, Y_train], axis=1)
 	test_zip=np.concatenate([val_set, Y_pred],axis=1)
 	context['full_set']=np.array(test_zip)
 #			print(zip_val)
-	class_report=pd.DataFrame(report2dict(met.classification_report(Y_test, Y_pred)))
+	class_report=pd.DataFrame(report2dict(met.classification_report(Y_train, Y_pred)))
 	context['class_report']=class_report.to_html()
 	context['classes']=list(set(Y))
 	lookup={}
@@ -206,16 +217,16 @@ def one_model_class_render(form, data_file, Y, context, Y_pred, target):
 	for c in context['classes']:
 		lookup[i]=c
 		i=i+1
-	conf_mat=pd.DataFrame(met.confusion_matrix(Y_test, Y_pred, labels=context['classes'])).rename(lookup, axis='index').rename(lookup, axis='columns')
+	conf_mat=pd.DataFrame(met.confusion_matrix(Y_train, Y_pred, labels=context['classes'])).rename(lookup, axis='index').rename(lookup, axis='columns')
 	context['confusion_matrix']=conf_mat.to_html()
-	prec, recall, fscore, support=met.precision_recall_fscore_support(Y_test, Y_pred, average="macro")
+	prec, recall, fscore, support=met.precision_recall_fscore_support(Y_train, Y_pred, average="macro")
 	context['precision']=prec
 	context['recall']=recall
 	context['fscore']=fscore
-	context['accuracy']=met.accuracy_score(Y_test, Y_pred)
+	context['accuracy']=met.accuracy_score(Y_train, Y_pred)
 	#print(Y)
-	bin_y=preprocessing.label_binarize(Y, classes=context['classes'])
-	bin_y_test=preprocessing.label_binarize(Y_test, classes=context['classes'])			
+	bin_y=preprocessing.label_binarize(Y_train, classes=context['classes'])
+	bin_y_test=preprocessing.label_binarize(Y_pred_test, classes=context['classes'])			
 	bin_y_pred=preprocessing.label_binarize(Y_pred, classes=context['classes'])			
 	n_classes=bin_y.shape[1]
 	fpr=dict()
@@ -224,7 +235,7 @@ def one_model_class_render(form, data_file, Y, context, Y_pred, target):
 
 	print(n_classes)
 	for i in range(n_classes):
-		fpr[i], tpr[i], _ = met.roc_curve(bin_y_test[:, i], bin_y_pred[:, i])
+		fpr[i], tpr[i], _ = met.roc_curve(bin_y[:, i], bin_y_pred[:, i])
 		roc_auc[i] = met.auc(fpr[i], tpr[i])
 	all_fpr = np.unique(np.concatenate([fpr[i] for i in range(n_classes)]))
 	mean_tpr = np.zeros_like(all_fpr)
@@ -242,23 +253,34 @@ def one_model_class_render(form, data_file, Y, context, Y_pred, target):
 	# here you can add things like:
 	return render_to_response("result_class.html",context)
 
-def two_model_class_render(form, data_file, Y, context, Y_pred_1, Y_pred_2, target):
-	X_test=data_file.loc[:, data_file.columns!=target]
-	Y_test=Y
-	context['x_cols_1']=X_test.columns
-	context['tot_cols_1']=range(len(X_test.columns)+2)
+def two_model_class_render(form, data_file, Y, context, test_file, Y_pred_1, Y_pred_test_1, Y_pred_2, Y_pred_test_2, target):
+	X_train=data_file.loc[:, data_file.columns!=target]
+	Y_train=Y
+
+	X_test=test_file
+
+	context['x_test_cols_1']=X_test.columns
+	context['tot_test_cols_1']=range(len(X_train.columns)+1)
+	context['y_pred_test_1']=Y_pred_test_1
+	Y_test_pred_1=np.matrix(Y_pred_test_1).T
+	test_val_set=np.concatenate([X_test, Y_test_pred_1], axis=1)
+	test_zip=np.concatenate([X_test, Y_test_pred_1],axis=1)
+	context['full_test_set_1']=np.array(test_zip)
+
+	context['x_cols_1']=X_train.columns
+	context['tot_cols_1']=range(len(X_train.columns)+2)
 	context['y_pred_1']=Y_pred_1
-	context['y_test_1']=Y_test 
-	zip_val=list(zip(Y_test, Y_pred_1))
+	context['y_train_1']=Y_train 
+	zip_val=list(zip(Y_train, Y_pred_1))
 	Y_pred_1=np.matrix(Y_pred_1).T
-	Y_test=np.matrix(Y_test).T
-	val_set=np.concatenate([X_test, Y_test], axis=1)
+	Y_train=np.matrix(Y_train).T
+	val_set=np.concatenate([X_train, Y_train], axis=1)
 	print(val_set.shape)
 	print(Y_pred_1.shape)
 	test_zip=np.concatenate([val_set, Y_pred_1],axis=1)
 	context['full_set_1']=np.array(test_zip)
 #			print(zip_val)
-	class_report=pd.DataFrame(report2dict(met.classification_report(Y_test, Y_pred_1)))
+	class_report=pd.DataFrame(report2dict(met.classification_report(Y_train, Y_pred_1)))
 	context['class_report_1']=class_report.to_html()
 	context['classes']=list(set(Y))
 	lookup={}
@@ -266,16 +288,16 @@ def two_model_class_render(form, data_file, Y, context, Y_pred_1, Y_pred_2, targ
 	for c in context['classes']:
 		lookup[i]=c
 		i=i+1
-	conf_mat=pd.DataFrame(met.confusion_matrix(Y_test, Y_pred_1, labels=context['classes'])).rename(lookup, axis='index').rename(lookup, axis='columns')
+	conf_mat=pd.DataFrame(met.confusion_matrix(Y_train, Y_pred_1, labels=context['classes'])).rename(lookup, axis='index').rename(lookup, axis='columns')
 	context['confusion_matrix_1']=conf_mat.to_html()
-	prec, recall, fscore, support=met.precision_recall_fscore_support(Y_test, Y_pred_1, average="macro")
+	prec, recall, fscore, support=met.precision_recall_fscore_support(Y_train, Y_pred_1, average="macro")
 	context['precision_1']=prec
 	context['recall_1']=recall
 	context['fscore_1']=fscore
-	context['accuracy_1']=met.accuracy_score(Y_test, Y_pred_1)
+	context['accuracy_1']=met.accuracy_score(Y_train, Y_pred_1)
 	#print(Y)
 	bin_y=preprocessing.label_binarize(Y, classes=context['classes'])
-	bin_y_test=preprocessing.label_binarize(Y_test, classes=context['classes'])			
+	bin_y_test=preprocessing.label_binarize(Y_pred_test_1, classes=context['classes'])			
 	bin_y_pred=preprocessing.label_binarize(Y_pred_1, classes=context['classes'])			
 	n_classes=bin_y.shape[1]
 	fpr=dict()
@@ -284,7 +306,7 @@ def two_model_class_render(form, data_file, Y, context, Y_pred_1, Y_pred_2, targ
 
 	print(n_classes)
 	for i in range(n_classes):
-		fpr[i], tpr[i], _ = met.roc_curve(bin_y_test[:, i], bin_y_pred[:, i])
+		fpr[i], tpr[i], _ = met.roc_curve(bin_y[:, i], bin_y_pred[:, i])
 		roc_auc[i] = met.auc(fpr[i], tpr[i])
 	all_fpr = np.unique(np.concatenate([fpr[i] for i in range(n_classes)]))
 	mean_tpr = np.zeros_like(all_fpr)
@@ -300,20 +322,34 @@ def two_model_class_render(form, data_file, Y, context, Y_pred_1, Y_pred_2, targ
 	context['zip_json_1']=json.dumps(list(zip(all_fpr, mean_tpr)))
 	context['form']=form
 
-	X_test=data_file.loc[:, data_file.columns!=target]
-	Y_test=Y
-	context['x_cols_2']=X_test.columns
-	context['tot_cols_2']=range(len(X_test.columns)+2)
+
+
+	X_train=data_file.loc[:, data_file.columns!=target]
+	Y_train=Y
+
+	X_test=test_file
+
+	context['x_test_cols_2']=X_test.columns
+	context['tot_test_cols_2']=range(len(X_train.columns)+1)
+	context['y_pred_test_2']=Y_pred_test_2
+	Y_test_pred_2=np.matrix(Y_pred_test_2).T
+	test_val_set=np.concatenate([X_test, Y_test_pred_2], axis=1)
+	test_zip=np.concatenate([X_test, Y_test_pred_2],axis=1)
+	context['full_test_set_2']=np.array(test_zip)
+
+	context['x_cols_2']=X_train.columns
+	context['tot_cols_2']=range(len(X_train.columns)+2)
 	context['y_pred_2']=Y_pred_2
-	context['y_test_2']=Y_test 
-	zip_val=list(zip(Y_test, Y_pred_2))
+	context['y_train_2']=Y_train 
+	zip_val=list(zip(Y_train, Y_pred_2))
 	Y_pred_2=np.matrix(Y_pred_2).T
-	Y_test=np.matrix(Y_test).T
-	val_set=np.concatenate([X_test, Y_test], axis=1)
+	Y_train=np.matrix(Y_train).T
+	val_set=np.concatenate([X_train, Y_train], axis=1)
+
 	test_zip=np.concatenate([val_set, Y_pred_2],axis=1)
 	context['full_set_2']=np.array(test_zip)
 #			print(zip_val)
-	class_report=pd.DataFrame(report2dict(met.classification_report(Y_test, Y_pred_2)))
+	class_report=pd.DataFrame(report2dict(met.classification_report(Y_train, Y_pred_2)))
 	context['class_report_2']=class_report.to_html()
 	context['classes']=list(set(Y))
 	lookup={}
@@ -321,16 +357,16 @@ def two_model_class_render(form, data_file, Y, context, Y_pred_1, Y_pred_2, targ
 	for c in context['classes']:
 		lookup[i]=c
 		i=i+1
-	conf_mat=pd.DataFrame(met.confusion_matrix(Y_test, Y_pred_2, labels=context['classes'])).rename(lookup, axis='index').rename(lookup, axis='columns')
+	conf_mat=pd.DataFrame(met.confusion_matrix(Y_train, Y_pred_2, labels=context['classes'])).rename(lookup, axis='index').rename(lookup, axis='columns')
 	context['confusion_matrix_2']=conf_mat.to_html()
-	prec, recall, fscore, support=met.precision_recall_fscore_support(Y_test, Y_pred_2, average="macro")
+	prec, recall, fscore, support=met.precision_recall_fscore_support(Y_train, Y_pred_2, average="macro")
 	context['precision_2']=prec
 	context['recall_2']=recall
 	context['fscore_2']=fscore
-	context['accuracy_2']=met.accuracy_score(Y_test, Y_pred_2)
+	context['accuracy_2']=met.accuracy_score(Y_train, Y_pred_2)
 	#print(Y)
 	bin_y=preprocessing.label_binarize(Y, classes=context['classes'])
-	bin_y_test=preprocessing.label_binarize(Y_test, classes=context['classes'])			
+	bin_y_test=preprocessing.label_binarize(Y_pred_test_2, classes=context['classes'])			
 	bin_y_pred=preprocessing.label_binarize(Y_pred_2, classes=context['classes'])			
 	n_classes=bin_y.shape[1]
 	fpr=dict()
@@ -339,7 +375,7 @@ def two_model_class_render(form, data_file, Y, context, Y_pred_1, Y_pred_2, targ
 
 	print(n_classes)
 	for i in range(n_classes):
-		fpr[i], tpr[i], _ = met.roc_curve(bin_y_test[:, i], bin_y_pred[:, i])
+		fpr[i], tpr[i], _ = met.roc_curve(bin_y[:, i], bin_y_pred[:, i])
 		roc_auc[i] = met.auc(fpr[i], tpr[i])
 	all_fpr = np.unique(np.concatenate([fpr[i] for i in range(n_classes)]))
 	mean_tpr = np.zeros_like(all_fpr)
@@ -559,9 +595,10 @@ def two_model_clust_render(form, data_file, X, clust1, clust2, context, Y_pred_1
 	context['form']=form
 	return render_to_response("result_clust_comp.html", context)
 
-def process(data_file, context, form, **kwargs):
+def process(data_file, test_file, context, form, **kwargs):
 
 	X=data_file.fillna(0)
+	X_test=test_file.fillna(0)
 	print("In process")
 	algorithm_choice=form.cleaned_data['algorithm_choice']
 	if algorithm_choice == 'S':
@@ -573,10 +610,16 @@ def process(data_file, context, form, **kwargs):
 				X=X.loc[:, X.columns!=i]
 
 		Y=data_file[str(target)]
-		validation_split=form.cleaned_data['validation_split']
 
-		#X_train, X_test, Y_train, Y_test=train_test_split(X,Y,test_size=1-(float(validation_split)/100), random_state=100)
+		X_test = test_file.loc[:, test_file.columns!=target]
+		for i in X_test.columns:
+			if isinstance(X_test.at[0,i],str):
+				X_test, col=encode_target(X_test, i)
+				X_test=X_test.loc[:, X_test.columns!=i]
+
+		validation_split=form.cleaned_data['validation_split']
 		method_super=form.cleaned_data['method_super']
+
 		if method_super == 'C':
 			method_class=form.cleaned_data['method_class']
 			if len(method_class)==1:
@@ -584,35 +627,41 @@ def process(data_file, context, form, **kwargs):
 				is_hyper=form.cleaned_data['is_class_hyper']
 				if is_hyper == 'Y':
 					grid_search=RandomizedSearchCV(clf, params)
-					#Y_pred=cross_val_predict(grid_search, X, Y, cv=int(100-validation_split))
+					Y_pred=cross_val_predict(grid_search, X, Y, cv=int(100-validation_split))
 					grid_search.fit(X, Y)
-					Y_pred=grid_search.predict(X)
+					Y_pred_test=grid_search.predict(X_test)
 					context['hyper_result']=pd.DataFrame(grid_search.cv_results_).to_html()
 				else:
+					clf.fit(X, Y)
+					Y_pred_test=clf.predict(X_test)					
 					Y_pred=cross_val_predict(clf, X, Y, cv=int(100-validation_split)) #clf_gini.predict(X_test)
-				return one_model_class_render(form, data_file, Y, context, Y_pred, target)
+				return one_model_class_render(form, data_file, Y, context, test_file, Y_pred, Y_pred_test, target)
 			if len(method_class)==2:
 				clf_1, context['algo_name_1'], params_1, context['img_url_1']=mapping_class(method_class[0])
 				is_hyper=form.cleaned_data['is_class_hyper']
 				if is_hyper == 'Y':
 					grid_search=RandomizedSearchCV(clf_1, params_1)
-					#Y_pred=cross_val_predict(grid_search, X, Y, cv=int(100-validation_split))
+					Y_pred_1=cross_val_predict(grid_search, X, Y, cv=int(100-validation_split))
 					grid_search.fit(X, Y)
-					Y_pred_1=grid_search.predict(X)
+					Y_pred_test_1=grid_search.predict(X_test)
 					context['hyper_result_1']=pd.DataFrame(grid_search.cv_results_).to_html()
 				else:
+					clf_1.fit(X, Y)
+					Y_pred_test_1=clf_1.predict(X_test)
 					Y_pred_1=cross_val_predict(clf_1, X, Y, cv=int(100-validation_split))
 				clf_2, context['algo_name_2'], params_2, context['img_url_2']=mapping_class(method_class[1])
 				is_hyper=form.cleaned_data['is_class_hyper']
 				if is_hyper == 'Y':
 					grid_search=RandomizedSearchCV(clf_2, params_2)
-					#Y_pred=cross_val_predict(grid_search, X, Y, cv=int(100-validation_split))
+					Y_pred_2=cross_val_predict(grid_search, X, Y, cv=int(100-validation_split))
 					grid_search.fit(X, Y)
-					Y_pred_2=grid_search.predict(X)
+					Y_pred_test_2=grid_search.predict(X_test)
 					context['hyper_result_2']=pd.DataFrame(grid_search.cv_results_).to_html()
 				else:
+					clf_2.fit(X, Y)
+					Y_pred_test_2=clf_2.predict(X_test)					
 					Y_pred_2=cross_val_predict(clf_2, X, Y, cv=int(100-validation_split))
-				return two_model_class_render(form, data_file, Y, context, Y_pred_1, Y_pred_2, target)
+				return two_model_class_render(form, data_file, Y, context, test_file, Y_pred_1, Y_pred_test_1, Y_pred_2, Y_pred_test_2, target)
 
 
 		if method_super == 'R':
@@ -730,7 +779,9 @@ class NewExperiment(CreateView):
 		context = self.get_context_data(**kwargs)
 		inputfile=form.cleaned_data['inputfile']
 		data_file=pd.DataFrame(pd.read_csv(inputfile, sep=',', keep_default_na=False))
-		temp=process(data_file, context, form, **kwargs)
+		testfile=form.cleaned_data['test_file']
+		test_file=pd.DataFrame(pd.read_csv(testfile, sep=',', keep_default_na=False))
+		temp=process(data_file, test_file, context, form, **kwargs)
 		self.object=form.save()
 		return temp
 
@@ -758,7 +809,7 @@ class EditExperimentForm(forms.ModelForm):
 		model = Post
 		exclude=['inputfile']
 		widgets={
-#			'inputfile': forms.FileInput,	
+			'test_file': forms.FileInput,	
 			'algorithm_choice': forms.Select(attrs={'onchange':"showDiv(this);"}),
 			'method_super': forms.Select(attrs={'onchange':"showSuperDiv(this);"}),
 			'method_unsuper': forms.Select(attrs={'onchange':"showUnsuperDiv(this);"}),
@@ -818,8 +869,10 @@ class EditExperiment(UpdateView):
 		context = self.get_context_data(**kwargs)
 		p=Post.objects.get(pk=context['pk'])
 		data_file=p.get_inputfile_as_DF()
+		testfile=form.cleaned_data['test_file']
+		test_file=pd.DataFrame(pd.read_csv(testfile, sep=',', keep_default_na=False))
 		#print(form.cleaned_data["no_features"])
-		temp=process(data_file, context, form, **kwargs)
+		temp=process(data_file, test_file, context, form, **kwargs)
 		self.object=form.save(commit=False)
 		self.object.pk=kwargs['pk']
 		self.object.save(update_fields=[f.name for f in Post._meta.get_fields() if f.name !='inputfile' and f.name != 'id'], force_update=True)

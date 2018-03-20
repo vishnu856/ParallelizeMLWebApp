@@ -7,7 +7,8 @@
 	<div class="card-title">Results {% if algo_name %} for {{ algo_name }} {% endif %}<i class="material-icons right">poll</i></div>
 	<div class="card-tabs"> 
 		<ul class="tabs tabs-fixed-width">
-			<li class="tab"><a href="#result_table_1">Predictions</a></li>
+			<li class="tab"><a href="#result_table_1">Cross Val Predictions</a></li>
+			<li class="tab"><a href="#result_table_2">Test Set Predictions</a></li>
 			<li class="tab"><a href="#class_report_1">Reports</a></li>
 			<li class="tab"><a href="#graph_1">Graphs</a></li>
 	      </ul>
@@ -21,7 +22,7 @@
 							<th> {{ col }} </th>					
 						{% endfor %}		
 						<th> Test values: </th>
-						<th> Prediction: </th>  
+						<th> Predictions: </th>  
 					</tr>
 				</thead>
 				{% for y1 in full_set %}
@@ -33,6 +34,27 @@
 				{% endfor %}
 			</table>
 		</div>
+
+		<div id="result_table_2" class="responsive-table" style="overflow-x:scroll; height: 80%;">
+			<table class="highlight centered">
+				<thead>
+					<tr>		
+						{% for col in x_test_cols %}
+							<th> {{ col }} </th>					
+						{% endfor %}
+						<th> Predictions: </th>  
+					</tr>
+				</thead>
+				{% for y1 in full_test_set %}
+				<tbody>		
+					{% for ele in y1 %}		
+						<td> {{ ele }} </td>
+					{% endfor %}
+				</tbody>
+				{% endfor %}
+			</table>
+		</div>
+
 		<div id="class_report_1" style="overflow-x:scroll; overflow-y:scroll; height: 80%;">
 			<div class="responsive-table">
 				<h5 class="center"> Classification Report </h5>

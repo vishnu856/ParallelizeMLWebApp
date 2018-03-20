@@ -7,7 +7,10 @@ from multiselectfield import MultiSelectField
 # Create your models here.
 
 def user_directory_path(instance, filename):
-	return 'users/{0}'.format(filename)
+	return 'users/train/{0}'.format(filename)
+
+def user_directory_test_path(instance, filename):
+	return 'users/test/{0}'.format(filename)
 
 class Post(models.Model):
 	ALGO_CHOICES=(
@@ -55,7 +58,9 @@ class Post(models.Model):
 		('N', 'No'),
 	)
 	title=models.CharField(max_length=200, default="Untitled")
-	inputfile=models.FileField(upload_to=user_directory_path, null=True, blank=True)	
+	inputfile=models.FileField(upload_to=user_directory_path, null=True, blank=True)
+	test_file=models.FileField(upload_to=user_directory_test_path, null=True, blank=True)
+		
 	comments=models.CharField(max_length=500, blank=True, null=True)
 	algorithm_choice=models.CharField(max_length=2, choices=ALGO_CHOICES, blank=True)
 	
@@ -78,6 +83,8 @@ class Post(models.Model):
 
 	no_features=models.PositiveSmallIntegerField(default=2)
 
+	myString = "This is a string"
+
 	def get_absolute_url(self):
 		return reverse('home')
 
@@ -85,7 +92,11 @@ class Post(models.Model):
 		return basename(self.title)
 
 	def get_inputfile_text(self):
+		print(self.myString)
 		return pd.DataFrame(pd.read_csv(self.inputfile, sep=',')).to_html(classes="highlight centered")
 	
 	def get_inputfile_as_DF(self):
 		return pd.DataFrame(pd.read_csv(self.inputfile, sep=',', keep_default_na=False))
+
+	def get_testfile_as_DF(self):
+		return pd.DataFrame(pd.read_csv(self.test_file, sep=',', keep_default_na=False))

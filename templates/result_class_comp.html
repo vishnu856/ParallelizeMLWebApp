@@ -7,7 +7,8 @@
 	<div class="card-title">Results {% if algo_name_1 %} for {{ algo_name_1 }} {% endif %}<i class="material-icons right">poll</i></div>
 	<div class="card-tabs "> 
 		<ul class="tabs tabs-fixed-width">
-			<li class="tab"><a href="#result_table_1">Predictions</a></li>
+			<li class="tab"><a href="#result_table_1">Cross Val Predictions</a></li>
+			<li class="tab"><a href="#result_table_test_1">Test Set Predictions</a></li>
 			<li class="tab"><a href="#class_report_1">Reports</a></li>
 			<li class="tab"><a href="#graph_1">Graphs</a></li>
 	      </ul>
@@ -25,6 +26,25 @@
 				</tr>
 			</thead>
 			{% for y1 in full_set_1 %}
+			<tbody>		
+				{% for ele in y1 %}		
+					<td> {{ ele }} </td>
+				{% endfor %}
+			</tbody>
+			{% endfor %}
+		</table>
+	</div>		
+	<div id="result_table_test_1" class="responsive-table" style="overflow-x:scroll; height: 80%; width: 100%;">
+		<table class="highlight centered">
+			<thead>
+				<tr>		
+					{% for col in x_test_cols_1 %}
+						<th> {{ col }} </th>					
+					{% endfor %}		
+					<th> Prediction: </th>  
+				</tr>
+			</thead>
+			{% for y1 in full_test_set_1 %}
 			<tbody>		
 				{% for ele in y1 %}		
 					<td> {{ ele }} </td>
@@ -83,7 +103,8 @@
 	<div class="card-title">Results {% if algo_name_2 %} for {{ algo_name_2 }} {% endif %}<i class="material-icons right">poll</i></div>
 	<div class="card-tabs"> 
 				<ul class="tabs  tabs-fixed-width">
-					<li class="tab"><a href="#result_table_2">Predictions</a></li>
+					<li class="tab"><a href="#result_table_2">Cross Val Predictions</a></li>
+					<li class="tab"><a href="#result_table_test_2">Test Set Predictions</a></li>
 					<li class="tab"><a href="#class_report_2">Reports</a></li>
 					<li class="tab"><a href="#graph_2">Graphs</a></li>
 			      </ul>
@@ -109,6 +130,25 @@
 			{% endfor %}
 		</table>
 	</div>
+	<div id="result_table_test_2" class="responsive-table" style="overflow-x:scroll; height: 80%; width: 100%;">
+		<table class="highlight centered">
+			<thead>
+				<tr>		
+					{% for col in x_test_cols_2 %}
+						<th> {{ col }} </th>					
+					{% endfor %}		
+					<th> Prediction: </th>  
+				</tr>
+			</thead>
+			{% for y1 in full_test_set_2 %}
+			<tbody>		
+				{% for ele in y1 %}		
+					<td> {{ ele }} </td>
+				{% endfor %}
+			</tbody>
+			{% endfor %}
+		</table>
+	</div>	
 	<div id="class_report_2" style="overflow-x:scroll; overflow-y:scroll; height: 80%;">
 		<div class="responsive-table">
 			<h5 class="center"> Classification Report </h5>
