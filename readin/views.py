@@ -471,7 +471,7 @@ def one_model_reg_render(form, data_file, Y, context, test_file, Y_pred, Y_pred_
 	context['explained_variance_score']=met.explained_variance_score(Y_train, Y_pred)
 	context['mean_absolute_error']=met.mean_absolute_error(Y_train, Y_pred)
 	context['mean_squared_error']=met.mean_squared_error(Y_train, Y_pred)
-	context['mean_squared_log_error']=met.mean_squared_log_error(Y_train, Y_pred)
+	#context['mean_squared_log_error']=met.mean_squared_log_error(Y_train, Y_pred)
 	context['median_absolute_error']=met.median_absolute_error(Y_train, Y_pred)
 	context['r2_score']=met.r2_score(Y_train, Y_pred)
 #			print(zip_val)
@@ -480,50 +480,72 @@ def one_model_reg_render(form, data_file, Y, context, test_file, Y_pred, Y_pred_
 	# here you can add things like:
 	return render_to_response("result_reg.html",context)
 
-def two_model_reg_render(form, data_file, Y, context, Y_pred_1, Y_pred_2, target):
-	X_test=data_file.loc[:, data_file.columns!=target]
-	Y_test=Y
-	context['x_cols_1']=X_test.columns
-	context['tot_cols_1']=range(len(X_test.columns)+2)
-	context['y_pred_1']=Y_pred_1 
-	context['y_test_1']=Y_test 
-	zip_val=list(zip(Y_test, Y_pred_1))
-	Y_pred_1=np.matrix(Y_pred_1).T
-	Y_test=np.matrix(Y_test).T
-	val_set=np.concatenate([X_test, Y_test], axis=1)
-	test_zip=np.concatenate([val_set, Y_pred_1],axis=1)
-	context['full_set_1']=np.array(test_zip)
-	context['explained_variance_score_1']=met.explained_variance_score(Y_test, Y_pred_1)
-	context['mean_absolute_error_1']=met.mean_absolute_error(Y_test, Y_pred_1)
-	context['mean_squared_error_1']=met.mean_squared_error(Y_test, Y_pred_1)
-	context['mean_squared_log_error_1']=met.mean_squared_log_error(Y_test, Y_pred_1)
-	context['median_absolute_error_1']=met.median_absolute_error(Y_test, Y_pred_1)
-	context['r2_score_1']=met.r2_score(Y_test, Y_pred_1)
-	context['zip_json_1']=json.dumps(zip_val)
+def two_model_reg_render(form, data_file, Y, context, test_file, Y_pred_1, Y_pred_test_1, Y_pred_2, Y_pred_test_2, target):
+	X_test=test_file.loc[:, test_file.columns!=target]
 
-	X_test=data_file.loc[:, data_file.columns!=target]
-	Y_test=Y
-	context['x_cols_2']=X_test.columns
-	context['tot_cols_2']=range(len(X_test.columns)+2)
-	context['y_pred_2']=Y_pred_2
-	context['y_test_2']=Y_test 
-	zip_val=list(zip(Y_test, Y_pred_2))
-	Y_pred_2=np.matrix(Y_pred_2).T
-	Y_test=np.matrix(Y_test).T
-	val_set=np.concatenate([X_test, Y_test], axis=1)
-	test_zip=np.concatenate([val_set, Y_pred_2],axis=1)
-	context['full_set_2']=np.array(test_zip)
-	context['explained_variance_score_2']=met.explained_variance_score(Y_test, Y_pred_2)
-	context['mean_absolute_error_2']=met.mean_absolute_error(Y_test, Y_pred_2)
-	context['mean_squared_error_2']=met.mean_squared_error(Y_test, Y_pred_2)
-	context['mean_squared_log_error_2']=met.mean_squared_log_error(Y_test, Y_pred_2)
-	context['median_absolute_error_2']=met.median_absolute_error(Y_test, Y_pred_2)
-	context['r2_score_2']=met.r2_score(Y_test, Y_pred_2)
+	X_train=data_file.loc[:, data_file.columns!=target]
+	Y_train=Y	
+	
+	context['x_test_cols_1']=X_test.columns
+	context['tot_test_cols_1']=range(len(X_train.columns)+1)
+	context['y_pred_test_1']=Y_pred_test_1
+	Y_test_pred_1=np.matrix(Y_pred_test_1).T
+	test_zip_1=np.concatenate([X_test, Y_test_pred_1],axis=1)
+	context['full_test_set_1']=np.array(test_zip_1)
+
+	context['x_cols_1']=X_train.columns
+	context['tot_cols_1']=range(len(X_train.columns)+2)
+	context['y_pred_1']=Y_pred_1 
+	context['y_train_1']=Y_train 
+	zip_val_1=list(zip(Y_train, Y_pred_1))
+	Y_pred_1=np.matrix(Y_pred_1).T
+	Y_train=np.matrix(Y_train).T
+	val_set_1=np.concatenate([X_train, Y_train], axis=1)
+	test_zip_1=np.concatenate([val_set_1, Y_pred_1],axis=1)
+	context['full_set_1']=np.array(test_zip_1)
+
+	context['explained_variance_score_1']=met.explained_variance_score(Y_train, Y_pred_1)
+	context['mean_absolute_error_1']=met.mean_absolute_error(Y_train, Y_pred_1)
+	context['mean_squared_error_1']=met.mean_squared_error(Y_train, Y_pred_1)
+	#context['mean_squared_log_error_1']=met.mean_squared_log_error(Y_train, Y_pred_1)
+	context['median_absolute_error_1']=met.median_absolute_error(Y_train, Y_pred_1)
+	context['r2_score_1']=met.r2_score(Y_train, Y_pred_1)
 #			print(zip_val)
-	context['zip_json_2']=json.dumps(zip_val)
+	context['zip_json_1']=json.dumps(zip_val_1)
+
+	X_test=test_file.loc[:, test_file.columns!=target]
+
+	X_train=data_file.loc[:, data_file.columns!=target]
+	Y_train=Y	
+	
+	context['x_test_cols_2']=X_test.columns
+	context['tot_test_cols_2']=range(len(X_train.columns)+1)
+	context['y_pred_test_2']=Y_pred_test_2
+	Y_test_pred_2=np.matrix(Y_pred_test_2).T
+	test_zip_2=np.concatenate([X_test, Y_test_pred_2],axis=1)
+	context['full_test_set_2']=np.array(test_zip_2)
+
+	context['x_cols_2']=X_train.columns
+	context['tot_cols_2']=range(len(X_train.columns)+2)
+	context['y_pred_2']=Y_pred_2 
+	context['y_train_2']=Y_train 
+	zip_val_2=list(zip(Y_train, Y_pred_2))
+	Y_pred_2=np.matrix(Y_pred_2).T
+	Y_train=np.matrix(Y_train).T
+	val_set_2=np.concatenate([X_train, Y_train], axis=1)
+	test_zip_2=np.concatenate([val_set_2, Y_pred_2],axis=1)
+	context['full_set_2']=np.array(test_zip_2)
+
+	context['explained_variance_score_2']=met.explained_variance_score(Y_train, Y_pred_2)
+	context['mean_absolute_error_2']=met.mean_absolute_error(Y_train, Y_pred_2)
+	context['mean_squared_error_2']=met.mean_squared_error(Y_train, Y_pred_2)
+	#context['mean_squared_log_error_2']=met.mean_squared_log_error(Y_train, Y_pred_2)
+	context['median_absolute_error_2']=met.median_absolute_error(Y_train, Y_pred_2)
+	context['r2_score_2']=met.r2_score(Y_train, Y_pred_2)
+#			print(zip_val)
+	context['zip_json_2']=json.dumps(zip_val_2)
 
 	context['form']=form
-	# here you can add things like:
 	return render_to_response("result_reg_comp.html",context)
 
 def mapping_clust(method_clust, n_clusters):
@@ -700,21 +722,27 @@ def process(data_file, test_file, context, form, **kwargs):
 				if is_hyper == 'Y':
 					grid_search=RandomizedSearchCV(rgr_1, params_1)
 					grid_search.fit(X, Y)
-					Y_pred_1=grid_search.predict(X)
+					Y_pred_1=cross_val_predict(grid_search, X, Y, cv=int(100-validation_split))
+					Y_pred_test_1=grid_search.predict(X_test)
 					context['hyper_result_1']=pd.DataFrame(grid_search.cv_results_).to_html()
 				else:			
+					rgr_1.fit(X, Y)
+					Y_pred_test_1=rgr_1.predict(X_test)					
 					Y_pred_1=cross_val_predict(rgr_1, X, Y, cv=int(100-validation_split))
 				rgr_2, context['algo_name_2'], params_2, context['img_url_2']=mapping_reg(method_reg[1])
 				is_hyper=form.cleaned_data['is_reg_hyper']
 				if is_hyper == 'Y':
 					grid_search=RandomizedSearchCV(rgr_2, params_2)
-					#Y_pred=cross_val_predict(grid_search, X, Y, cv=int(100-validation_split))
+					Y_pred_2=cross_val_predict(grid_search, X, Y, cv=int(100-validation_split))
 					grid_search.fit(X, Y)
-					Y_pred_2=grid_search.predict(X)
+					Y_pred_test_2=grid_search.predict(X_test)
 					context['hyper_result_2']=pd.DataFrame(grid_search.cv_results_).to_html()
-				else:			
+				else:		
+					rgr_2.fit(X, Y)
+					Y_pred_test_2=rgr_2.predict(X_test)						
 					Y_pred_2=cross_val_predict(rgr_2, X, Y, cv=int(100-validation_split))
-				return two_model_reg_render(form, data_file, Y, context, Y_pred_1, Y_pred_2, target)
+				print(Y_pred_2)
+				return two_model_reg_render(form, data_file, Y, context, test_file, Y_pred_1, Y_pred_test_1, Y_pred_2, Y_pred_test_2, target)
 
 	if algorithm_choice == 'U':
 		method_unsuper=form.cleaned_data['method_unsuper']
