@@ -443,25 +443,37 @@ def mapping_reg(s):
 
 	return rgr, context_str, params, context_img
 
-def one_model_reg_render(form, data_file, Y, context, Y_pred, target):
-	X_test=data_file.loc[:, data_file.columns!=target]
-	Y_test=Y
-	context['x_cols']=X_test.columns
-	context['tot_cols']=range(len(X_test.columns)+2)
+def one_model_reg_render(form, data_file, Y, context, test_file, Y_pred, Y_pred_test, target):
+	X_test=test_file.loc[:, test_file.columns!=target]
+
+	X_train=data_file.loc[:, data_file.columns!=target]
+	Y_train=Y	
+	
+	context['x_test_cols']=X_test.columns
+	context['tot_test_cols']=range(len(X_train.columns)+1)
+	context['y_pred_test']=Y_pred_test
+	Y_test_pred=np.matrix(Y_pred_test).T
+	test_val_set=np.concatenate([X_test, Y_test_pred], axis=1)
+	test_zip=np.concatenate([X_test, Y_test_pred],axis=1)
+	context['full_test_set']=np.array(test_zip)
+
+	context['x_cols']=X_train.columns
+	context['tot_cols']=range(len(X_train.columns)+2)
 	context['y_pred']=Y_pred 
-	context['y_test']=Y_test 
-	zip_val=list(zip(Y_test, Y_pred))
+	context['y_train']=Y_train 
+	zip_val=list(zip(Y_train, Y_pred))
 	Y_pred=np.matrix(Y_pred).T
-	Y_test=np.matrix(Y_test).T
-	val_set=np.concatenate([X_test, Y_test], axis=1)
+	Y_train=np.matrix(Y_train).T
+	val_set=np.concatenate([X_train, Y_train], axis=1)
 	test_zip=np.concatenate([val_set, Y_pred],axis=1)
 	context['full_set']=np.array(test_zip)
-	context['explained_variance_score']=met.explained_variance_score(Y_test, Y_pred)
-	context['mean_absolute_error']=met.mean_absolute_error(Y_test, Y_pred)
-	context['mean_squared_error']=met.mean_squared_error(Y_test, Y_pred)
-	context['mean_squared_log_error']=met.mean_squared_log_error(Y_test, Y_pred)
-	context['median_absolute_error']=met.median_absolute_error(Y_test, Y_pred)
-	context['r2_score']=met.r2_score(Y_test, Y_pred)
+
+	context['explained_variance_score']=met.explained_variance_score(Y_train, Y_pred)
+	context['mean_absolute_error']=met.mean_absolute_error(Y_train, Y_pred)
+	context['mean_squared_error']=met.mean_squared_error(Y_train, Y_pred)
+	context['mean_squared_log_error']=met.mean_squared_log_error(Y_train, Y_pred)
+	context['median_absolute_error']=met.median_absolute_error(Y_train, Y_pred)
+	context['r2_score']=met.r2_score(Y_train, Y_pred)
 #			print(zip_val)
 	context['zip_json']=json.dumps(zip_val)
 	context['form']=form
@@ -673,13 +685,15 @@ def process(data_file, test_file, context, form, **kwargs):
 				is_hyper=form.cleaned_data['is_reg_hyper']
 				if is_hyper == 'Y':
 					grid_search=RandomizedSearchCV(rgr, params)
-					#Y_pred=cross_val_predict(grid_search, X, Y, cv=int(100-validation_split))
+					Y_pred=cross_val_predict(grid_search, X, Y, cv=int(100-validation_split))
 					grid_search.fit(X, Y)
-					Y_pred=grid_search.predict(X)
+					Y_pred_test=grid_search.predict(X_test)
 					context['hyper_result']=pd.DataFrame(grid_search.cv_results_).to_html()
 				else:			
+					rgr.fit(X, Y)
+					Y_pred_test=rgr.predict(X_test)					
 					Y_pred=cross_val_predict(rgr, X, Y, cv=int(100-validation_split))
-				return one_model_reg_render(form, data_file, Y, context, Y_pred, target)
+				return one_model_reg_render(form, data_file, Y, context, test_file, Y_pred, Y_pred_test, target)
 			if len(method_reg) == 2:
 				rgr_1, context['algo_name_1'], params_1, context['img_url_1']=mapping_reg(method_reg[0])
 				is_hyper=form.cleaned_data['is_reg_hyper']
