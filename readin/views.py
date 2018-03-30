@@ -7,6 +7,7 @@ from .models import Post
 from django.core.exceptions import ValidationError
 from django.urls import reverse_lazy
 from django import forms
+from django.conf import settings
 import os
 import pandas as pd
 from collections import defaultdict
@@ -575,6 +576,15 @@ def one_model_clust_render(form, data_file, X, clust, context, Y_pred):
 	context['chscore']=met.calinski_harabaz_score(X, labels=Y_pred)
 	context['form']=form
 
+	download_path = os.path.join(settings.MEDIA_ROOT, 'users/results')
+	try:
+		os.mkdir(download_path)
+	except:
+		print("OSError")
+	file_path = os.path.join(download_path, str(form.cleaned_data['title']+str(context['pk'])+".csv"))
+	pd.DataFrame(tot_zip).to_csv(path_or_buf=file_path, index=False)
+	context['clust_download_path']=file_path
+	
 	pca=PCA(n_components=2).fit(X)
 	pca_2d=pca.transform(X)
 	#print(X.shape)
@@ -629,13 +639,15 @@ def two_model_clust_render(form, data_file, X, clust1, clust2, context, Y_pred_1
 	context['form']=form
 	return render_to_response("result_clust_comp.html", context)
 
-def process(data_file, test_file, context, form, **kwargs):
+def process(data_file, context, form, **kwargs):
 
 	X=data_file.fillna(0)
-	X_test=test_file.fillna(0)
 	print("In process")
 	algorithm_choice=form.cleaned_data['algorithm_choice']
 	if algorithm_choice == 'S':
+		testfile=form.cleaned_data['test_file']
+		test_file=pd.DataFrame(pd.read_csv(testfile, sep=',', keep_default_na=False))
+		X_test=test_file.fillna(0)
 		target=form.cleaned_data['target']
 		X=data_file.loc[:, data_file.columns!=target]
 		for i in X.columns:
@@ -821,9 +833,7 @@ class NewExperiment(CreateView):
 		context = self.get_context_data(**kwargs)
 		inputfile=form.cleaned_data['inputfile']
 		data_file=pd.DataFrame(pd.read_csv(inputfile, sep=',', keep_default_na=False))
-		testfile=form.cleaned_data['test_file']
-		test_file=pd.DataFrame(pd.read_csv(testfile, sep=',', keep_default_na=False))
-		temp=process(data_file, test_file, context, form, **kwargs)
+		temp=process(data_file, context, form, **kwargs)
 		self.object=form.save()
 		return temp
 
@@ -911,10 +921,10 @@ class EditExperiment(UpdateView):
 		context = self.get_context_data(**kwargs)
 		p=Post.objects.get(pk=context['pk'])
 		data_file=p.get_inputfile_as_DF()
-		testfile=form.cleaned_data['test_file']
-		test_file=pd.DataFrame(pd.read_csv(testfile, sep=',', keep_default_na=False))
+		#testfile=form.cleaned_data['test_file']
+		#test_file=pd.DataFrame(pd.read_csv(testfile, sep=',', keep_default_na=False))
 		#print(form.cleaned_data["no_features"])
-		temp=process(data_file, test_file, context, form, **kwargs)
+		temp=process(data_file, context, form, **kwargs)
 		self.object=form.save(commit=False)
 		self.object.pk=kwargs['pk']
 		self.object.save(update_fields=[f.name for f in Post._meta.get_fields() if f.name !='inputfile' and f.name != 'id'], force_update=True)
