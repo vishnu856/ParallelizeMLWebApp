@@ -1,9 +1,37 @@
 <html>
 {% extends 'navbar.html' %}
-{% block content %}
+{% block content %} 
+{% load static %}
 <style>
 	.hex { opacity: 0.5; }
 </style>
+<style>
+
+#rcorners2 {
+    border-radius: 25px;
+    border: 10px solid #54698D;
+    padding: 20px; 
+    width: 500px;
+	 background-color:black;
+    height: 450px;    
+}
+.fullscreen-bg__video {
+    position: fixed;
+  top: 0;
+  left: 50%;
+  min-width: 100%;
+  width: 100%;
+  height: 100%;
+  /*height: 500px;*/
+  z-index: -100 ;
+  -ms-transform: translateX(-50%);
+  -moz-transform: translateX(-50%);
+  -webkit-transform: translateX(-50%);
+  transform: translateX(-50%);
+  background-size: cover;
+  }
+</style>
+
 <body>
 <h4 class="center"> Hello World!!! This is home. </h4>
 <div class="section container">
@@ -19,13 +47,16 @@
 </div>
 -->
 
+<div><video loop="" muted="" autoplay="" class="fullscreen-bg__video">
+        <source src="{% static 'main_site/hero.mp4' %}" type="video/mp4"></video></div>
+
 <div id="grid" style="position: relative;">
 <ul id="hexGrid">
 	{% for post in object_list %}
 		<li class="hex">
 			<div class="hexIn">
 				<a class="hexLink" href="{% url 'post_edit' post.pk %}"> 
-					<img src="https://farm4.staticflickr.com/3771/13199704015_72aa535bd7.jpg" alt="" />			
+					<img src="https://farm4.staticflickr.com/3771/13199704015_72aa535bd7.jpg" alt="" />
 					<h1>{{ post.title }} </h1> 
 					<p>{{ post.comments }} </p>
 				</a>
@@ -37,8 +68,6 @@
 
 </div>
 </body>
-
-
 
 <script>
 
